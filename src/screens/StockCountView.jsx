@@ -1,13 +1,13 @@
-import { View, Text, Button } from 'react-native';
-import React from 'react';
+import { View } from 'react-native'
+import React from 'react'
+import StockTable from '../components/Table/StockTable'
 
-const StockCountView = ({ navigation }) => {
+const StockCountView = () => {
   return (
-    <View className="flex-1 justify-center items-center">
-      <Text className="text-lg font-bold">Stock Count View Screen</Text>
-      <Button title="Go to Detail" onPress={() => navigation.navigate('Detail', { screenName: 'Stock Count View' })} />
+    <View className='flex-1'>
+      <StockTable />
     </View>
-  );
-};
+  )
+}
 
-export default StockCountView;
+export default StockCountView

@@ -4,10 +4,10 @@ import { View, Text } from "react-native";
 const OrderNumber = ({ orderNumber }) => {
   return (
     <View className="flex-row items-center">
-      <Text className="text-[#4D4D4D] font-['Poppins'] text-base">
+      <Text className="text-[16px] text-[#4D4D4D] font-poppins">
         Order No:{" "}
       </Text>
-      <Text className="font-['Poppins'] font-medium text-base">
+      <Text className="text-[16px] text-[#000] font-[Poppins-Medium]">
         {orderNumber}
       </Text>
     </View>

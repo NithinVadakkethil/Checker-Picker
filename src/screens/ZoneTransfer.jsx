@@ -1,11 +1,74 @@
-import { View, Text, Button } from 'react-native';
+import { View, FlatList } from 'react-native';
 import React from 'react';
+import { TransferItem } from '../components';
 
 const ZoneTransfer = ({ navigation }) => {
+  const transferItems = [
+    {
+      status: "Completed",
+      fromZone: "Zone A1",
+      fromColor: "#2F80ED",
+      toZone: "Zone B1",
+      toColor: "#EB5B00",
+      imageUri:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/09cd1b02dd637dcb8de157bb25ec89c157084cb6e51c4305c4d869d3697c7e20",
+    },
+    {
+      status: "Completed",
+      fromZone: "Zone A1",
+      fromColor: "#2F80ED",
+      toZone: "Zone C",
+      toColor: "#FFB200",
+      imageUri:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/b7a271550450fe7e3c0c7dfba49016a109166026f4ab5c5d034da807001c529d",
+    },
+    {
+      status: "Pending",
+      fromZone: "Zone A1",
+      fromColor: "#2F80ED",
+      toZone: "Zone D1",
+      toColor: "#DE64AC",
+      imageUri:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/b138c1b026bf46724a9740ec40de6c62f008f13ce869a8deb7817a63fc702932",
+    },
+    {
+      status: "Pending",
+      fromZone: "Picking Area",
+      fromColor: "#2F80ED",
+      toZone: "Sales Return",
+      toColor: "#DB0DDF",
+      imageUri:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/98c95ed96eed9d74e6e9823fa7558876716100a73fce4939928b20e260b9ef5e",
+    },
+    {
+      status: "Pending",
+      fromZone: "Zone A1",
+      fromColor: "#2F80ED",
+      toZone: "Damage",
+      toColor: "#FF2020",
+      imageUri:
+        "https://cdn.builder.io/api/v1/image/assets/TEMP/30aae5a562124ac772a9eaef056d4ff53faf64d282de813d7d215768164ef9d9",
+    },
+  ];
+
   return (
-    <View className="flex-1 justify-center items-center">
-      <Text className="text-lg font-bold">Zone Transfer Screen</Text>
-      <Button title="Go to Detail" onPress={() => navigation.navigate('Detail', { screenName: 'Zone Transfer' })} />
+    <View className="flex-1">
+      <FlatList
+        data={transferItems}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TransferItem
+            status={item.status}
+            fromZone={item.fromZone}
+            fromColor={item.fromColor}
+            toZone={item.toZone}
+            toColor={item.toColor}
+          />
+        )}
+        showsVerticalScrollIndicator={false}
+        // keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 30 }}
+      />
     </View>
   );
 };

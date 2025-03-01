@@ -3,7 +3,7 @@ import RightArrow from "../../assets/icons/rightArrow.svg"
 
 const Arrow = () => {
   return (
-    <RightArrow width={30} height={30}/>
+    <RightArrow width={24} height={24}/>
   );
 };
 
