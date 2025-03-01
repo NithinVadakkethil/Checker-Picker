@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
-// import Menu from "../assets/icons/menu.svg"
+import Menu from "../assets/icons/menu.svg"
 
 const HistoryItem = ({ initials, text, time }) => (
   <View className="flex-row items-center p-4 bg-white rounded-lg mb-3">
@@ -32,10 +32,10 @@ const History = () => {
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-2xl font-semibold">History</Text>
           <TouchableOpacity 
-            className="w-12 h-12 bg-white rounded-full items-center justify-center"
+            className="w-12 h-12 bg-white rounded-xl items-center justify-center"
             onPress={() => console.log('Menu pressed')}
           >
-            {/* <Menu size={24} /> */}
+            <Menu size={24} />
           </TouchableOpacity>
         </View>
         

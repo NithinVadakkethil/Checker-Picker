@@ -41,7 +41,7 @@ const TableComponent = ({ tableHead, widthArr, tableData }) => {
                     color: "#252525",
                     fontWeight: 400
                   }}
-                //   onPress={() => navigation.navigate("History")}
+                  onPress={() => navigation.navigate("History")}
                 />
               ))}
             </Table>
