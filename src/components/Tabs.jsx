@@ -1,6 +1,7 @@
-import { View, ScrollView, BackHandler } from "react-native";
+import { View, ScrollView, BackHandler, Text } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import TabItem from "./tabs/TabItem";
+import { DetailScreen } from "../screens";
 
 const Tabs = ({ data, navigation }) => {
   const scrollRef = useRef(null);
@@ -76,9 +77,9 @@ const Tabs = ({ data, navigation }) => {
       {/* Tab Content */}
       <View className="flex-1 p-4">
         {ActiveComponent ? (
-          <ActiveComponent navigation={navigation} />
+          <ActiveComponent navigation={navigation} onPress={handleTabPress}/>
         ) : (
-          <Text>No content available</Text>
+          <DetailScreen/>
         )}
       </View>
     </View>

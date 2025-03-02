@@ -1,8 +1,8 @@
-import { View, FlatList } from "react-native";
+import { View, FlatList, TouchableOpacity } from "react-native";
 import React from "react";
 import { OrderStatusCard } from "../components";
 
-const SalesInvoice = ({ navigation }) => {
+const SalesInvoice = ({ navigation, onPress }) => {
   const dummyData = [
     { id: "1", status: "Completed", orderNumber: "1234567" },
     { id: "2", status: "Pending", orderNumber: "1234568" },
@@ -32,7 +32,9 @@ const SalesInvoice = ({ navigation }) => {
         data={dummyData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <OrderStatusCard status={item.status} orderNumber={item.orderNumber} />
+          <TouchableOpacity onPress={onPress}>
+            <OrderStatusCard status={item.status} orderNumber={item.orderNumber} />
+          </TouchableOpacity>
         )}
         showsVerticalScrollIndicator={false}
         // keyboardShouldPersistTaps="handled"
