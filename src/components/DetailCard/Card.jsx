@@ -26,14 +26,14 @@ const Card = ({ order }) => {
       {/* <OrderHeader orderNo={orderNo} imageUrl={imageUrl} /> */}
 
       <ProductDetails
-          productName={productName}
-          availableQty={availableQty}
-          expiryDate={expiryDate}
-          orderNo={!hasLocationInfo ? orderNo : null}
+          productName={productName ? productName : ''}
+          availableQty={availableQty ? availableQty : ''}
+          expiryDate={expiryDate ? expiryDate : ''}
+          orderNo={"1234567"}
           fromZone={hasLocationInfo ? fromZone : null}
-          status={status}
-          uom={uom}
-          qty={hasLocationInfo ? qty : null}
+          status={status ? status : ''}
+          uom={uom ? uom : ''}
+          qty={100}
         />
     </View>
   );
