@@ -3,7 +3,7 @@ import { View, FlatList, TouchableOpacity } from "react-native";
 import { Card, EditBottomSheet, CreateBottomSheet } from "../components";
 import Add from "../assets/icons/Add.svg";
 
-const DetailScreen = ({activeIndex}) => {
+const DetailScreen = ({activeName}) => {
   // Create a reference to the bottom sheet
   const editBottomSheetRef = useRef(null);
   const createBottomSheetRef = useRef(null);
@@ -42,7 +42,7 @@ const DetailScreen = ({activeIndex}) => {
     },
   ];
 
-  console.log("activeIndex===>", activeIndex)
+  console.log("selectedName---->", activeName)
 
   return (
     <View className="flex-1 relative">

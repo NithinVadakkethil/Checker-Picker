@@ -43,7 +43,7 @@ const SalesInvoice = ({ navigation, onPress }) => {
         data={dummyData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={onPress}>
+          <TouchableOpacity onPress={()=> onPress("", "Sales Invoice")}>
             <OrderStatusCard status={item.status} orderNumber={item.orderNumber} />
           </TouchableOpacity>
         )}

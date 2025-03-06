@@ -3,7 +3,7 @@ import React, {useRef} from 'react';
 import { TransferItem, CreateBottomSheet } from '../components';
 import Add from "../assets/icons/Add.svg";
 
-const ZoneTransfer = ({ navigation }) => {
+const ZoneTransfer = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
   const transferItems = [
     {
@@ -67,13 +67,15 @@ const ZoneTransfer = ({ navigation }) => {
         data={transferItems}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TransferItem
-            status={item.status}
-            fromZone={item.fromZone}
-            fromColor={item.fromColor}
-            toZone={item.toZone}
-            toColor={item.toColor}
-          />
+          <TouchableOpacity onPress={()=> onPress("", "Zone Transfer")}>
+            <TransferItem
+              status={item.status}
+              fromZone={item.fromZone}
+              fromColor={item.fromColor}
+              toZone={item.toZone}
+              toColor={item.toColor}
+            />
+          </TouchableOpacity>
         )}
         showsVerticalScrollIndicator={false}
         // keyboardShouldPersistTaps="handled"

@@ -1,9 +1,9 @@
 import { View, FlatList, TouchableOpacity } from "react-native";
-import React, {useRef} from "react";
+import React, { useRef } from "react";
 import { ScheduledDeliveryCard, CreateBottomSheet } from "../components";
 import Add from "../assets/icons/Add.svg";
 
-const ScheduledDelivery = ({ navigation }) => {
+const ScheduledDelivery = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
   const dummyData = [
     {
@@ -118,12 +118,14 @@ const ScheduledDelivery = ({ navigation }) => {
         data={dummyData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <ScheduledDeliveryCard
-            status={item.status}
-            orderNumber={item.orderNo}
-            date={item.date}
-            time={item.time}
-          />
+          <TouchableOpacity onPress={() => onPress("", "Scheduled Delivery")}>
+            <ScheduledDeliveryCard
+              status={item.status}
+              orderNumber={item.orderNo}
+              date={item.date}
+              time={item.time}
+            />
+          </TouchableOpacity>
         )}
         showsVerticalScrollIndicator={false}
         // keyboardShouldPersistTaps="handled"
