@@ -1,8 +1,10 @@
 import { View, FlatList, TouchableOpacity } from "react-native";
-import React from "react";
-import { OrderStatusCard } from "../components";
+import React, {useRef} from "react";
+import { OrderStatusCard, CreateBottomSheet } from "../components";
+import Add from "../assets/icons/Add.svg";
 
 const SalesInvoice = ({ navigation, onPress }) => {
+  const createBottomSheetRef = useRef(null);
   const dummyData = [
     { id: "1", status: "Completed", orderNumber: "1234567" },
     { id: "2", status: "Pending", orderNumber: "1234568" },
@@ -25,9 +27,18 @@ const SalesInvoice = ({ navigation, onPress }) => {
     { id: "19", status: "Pending", orderNumber: "1234585" },
     { id: "20", status: "Pending", orderNumber: "1234586" },
   ];
-  
+
+  // Function to close the bottom sheet
+  const createSheetClose = () => {
+    createBottomSheetRef.current.close();
+  };
+
+  const createSheetOpen = () => {
+    createBottomSheetRef.current.open();
+  };
+
   return (
-    <View className="flex-1">
+    <View className="flex-1 relative">
       <FlatList
         data={dummyData}
         keyExtractor={(item) => item.id}
@@ -39,6 +50,17 @@ const SalesInvoice = ({ navigation, onPress }) => {
         showsVerticalScrollIndicator={false}
         // keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 30 }}
+      />
+      <TouchableOpacity
+        onPress={createSheetOpen}
+        className="absolute bottom-5 left-1/2 -translate-x-1/2"
+      >
+        <Add />
+      </TouchableOpacity>
+      <CreateBottomSheet
+        onClose={createSheetClose}
+        onOpen={createSheetOpen}
+        bottomSheetRef={createBottomSheetRef}
       />
     </View>
   );

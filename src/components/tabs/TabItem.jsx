@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
 
-const TabItem = ({ item, index, activeIndex, onPress }) => {
-  const isActive = activeIndex === index;
+const TabItem = ({ item, index, activeIndex, onPress, selectedName }) => {
+  const isActive = activeIndex === index
 
   return (
     <TouchableOpacity

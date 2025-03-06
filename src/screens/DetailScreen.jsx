@@ -1,8 +1,28 @@
-import React from "react";
-import { View, FlatList } from "react-native";
-import { Card } from "../components";
+import React, { useRef } from "react";
+import { View, FlatList, TouchableOpacity } from "react-native";
+import { Card, EditBottomSheet, CreateBottomSheet } from "../components";
+import Add from "../assets/icons/Add.svg";
 
-const DetailScreen = () => {
+const DetailScreen = ({activeIndex}) => {
+  // Create a reference to the bottom sheet
+  const editBottomSheetRef = useRef(null);
+  const createBottomSheetRef = useRef(null);
+
+  // Function to close the bottom sheet
+  const editSheetClose = () => {
+    editBottomSheetRef.current.close();
+  };
+
+  const editSheetOpen = () => {
+    editBottomSheetRef.current.open();
+  };
+  const createSheetClose = () => {
+    createBottomSheetRef.current.close();
+  };
+
+  const createSheetOpen = () => {
+    createBottomSheetRef.current.open();
+  };
   // Sample data for demonstration
   const orders = [
     {
@@ -20,31 +40,34 @@ const DetailScreen = () => {
       qty: 100,
       hasLocationInfo: true,
     },
-    // {
-    //   id: 2,
-    //   orderNo: "1234567",
-    //   productName: "Dairy Milk",
-    //   availableQty: 1500,
-    //   expiryDate: "12/12/25",
-    //   status: "Done",
-    //   uom: "50 Unit",
-    //   imageUrl:
-    //     "https://cdn.builder.io/api/v1/image/assets/TEMP/32230cf2-f06c-4d21-881a-20bd06349fc5?placeholderIfAbsent=true&apiKey=05f15ed087014a6a9f74a6d6a78953d9",
-    //   hasLocationInfo: false,
-    // },
   ];
 
+  console.log("activeIndex===>", activeIndex)
+
   return (
-    <View className="flex-1">
+    <View className="flex-1 relative">
       <FlatList
         data={orders}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Card order={item} />
-        )}
+        keyExtractor={(item) => item.id.toString()} // Ensure key is a string
+        renderItem={({ item }) => <Card order={item} onPress={editSheetOpen} />}
         showsVerticalScrollIndicator={false}
-        // keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 30 }}
+      />
+      <TouchableOpacity
+        onPress={createSheetOpen}
+        className="absolute bottom-5 left-1/2 -translate-x-1/2"
+      >
+        <Add />
+      </TouchableOpacity>
+      <EditBottomSheet
+        onClose={editSheetClose}
+        onOpen={editSheetOpen}
+        bottomSheetRef={editBottomSheetRef}
+      />
+      <CreateBottomSheet
+        onClose={createSheetClose}
+        onOpen={createSheetOpen}
+        bottomSheetRef={createBottomSheetRef}
       />
     </View>
   );

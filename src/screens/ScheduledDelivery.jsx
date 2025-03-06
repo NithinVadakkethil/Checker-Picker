@@ -1,8 +1,10 @@
-import { View, FlatList } from "react-native";
-import React from "react";
-import ScheduledDeliveryCard from "../components/ScheduledDeliveryCard/ScheduledDeliveryCard";
+import { View, FlatList, TouchableOpacity } from "react-native";
+import React, {useRef} from "react";
+import { ScheduledDeliveryCard, CreateBottomSheet } from "../components";
+import Add from "../assets/icons/Add.svg";
 
 const ScheduledDelivery = ({ navigation }) => {
+  const createBottomSheetRef = useRef(null);
   const dummyData = [
     {
       id: 1,
@@ -102,8 +104,16 @@ const ScheduledDelivery = ({ navigation }) => {
     },
   ];
 
+  const createSheetClose = () => {
+    createBottomSheetRef.current.close();
+  };
+
+  const createSheetOpen = () => {
+    createBottomSheetRef.current.open();
+  };
+
   return (
-    <View className="flex-1">
+    <View className="flex-1 relative">
       <FlatList
         data={dummyData}
         keyExtractor={(item) => item.id}
@@ -118,6 +128,17 @@ const ScheduledDelivery = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         // keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 30 }}
+      />
+      <TouchableOpacity
+        onPress={createSheetOpen}
+        className="absolute bottom-5 left-1/2 -translate-x-1/2"
+      >
+        <Add />
+      </TouchableOpacity>
+      <CreateBottomSheet
+        onClose={createSheetClose}
+        onOpen={createSheetOpen}
+        bottomSheetRef={createBottomSheetRef}
       />
     </View>
   );

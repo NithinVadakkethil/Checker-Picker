@@ -2,6 +2,7 @@ import { View, ScrollView, BackHandler, Text } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import TabItem from "./tabs/TabItem";
 import { DetailScreen } from "../screens";
+import Header from "./Header";
 
 const Tabs = ({ data, navigation }) => {
   const scrollRef = useRef(null);
@@ -53,6 +54,7 @@ const Tabs = ({ data, navigation }) => {
 
   return (
     <View className="flex-1 bg-[#F1F1F1]">
+      <Header/>
       {/* Scrollable Tab Bar */}
       <View className="border-b border-gray-300">
         <ScrollView
@@ -68,6 +70,7 @@ const Tabs = ({ data, navigation }) => {
               item={item}
               index={index}
               activeIndex={activeIndex}
+              selectedName={data[activeIndex]?.name}
               onPress={handleTabPress}
             />
           ))}
@@ -79,7 +82,7 @@ const Tabs = ({ data, navigation }) => {
         {ActiveComponent ? (
           <ActiveComponent navigation={navigation} onPress={handleTabPress}/>
         ) : (
-          <DetailScreen/>
+          <DetailScreen activeIndex={activeIndex} selectedName={data[activeIndex]?.name}/>
         )}
       </View>
     </View>

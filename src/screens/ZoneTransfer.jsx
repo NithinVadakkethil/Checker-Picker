@@ -1,8 +1,10 @@
-import { View, FlatList } from 'react-native';
-import React from 'react';
-import { TransferItem } from '../components';
+import { View, FlatList, TouchableOpacity } from 'react-native';
+import React, {useRef} from 'react';
+import { TransferItem, CreateBottomSheet } from '../components';
+import Add from "../assets/icons/Add.svg";
 
 const ZoneTransfer = ({ navigation }) => {
+  const createBottomSheetRef = useRef(null);
   const transferItems = [
     {
       status: "Completed",
@@ -51,6 +53,14 @@ const ZoneTransfer = ({ navigation }) => {
     },
   ];
 
+  const createSheetClose = () => {
+    createBottomSheetRef.current.close();
+  };
+
+  const createSheetOpen = () => {
+    createBottomSheetRef.current.open();
+  };
+
   return (
     <View className="flex-1">
       <FlatList
@@ -68,6 +78,17 @@ const ZoneTransfer = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         // keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 30 }}
+      />
+      <TouchableOpacity
+        onPress={createSheetOpen}
+        className="absolute bottom-5 left-1/2 -translate-x-1/2"
+      >
+        <Add />
+      </TouchableOpacity>
+      <CreateBottomSheet
+        onClose={createSheetClose}
+        onOpen={createSheetOpen}
+        bottomSheetRef={createBottomSheetRef}
       />
     </View>
   );

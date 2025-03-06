@@ -6,7 +6,7 @@ import ProductDetails from "./ProductDetails";
 import StatusInfo from "../StatusInfo";
 // import LocationInfo from "./LocationInfo";
 
-const Card = ({ order }) => {
+const Card = ({ order, onPress }) => {
   const {
     orderNo,
     productName,
@@ -22,7 +22,7 @@ const Card = ({ order }) => {
   } = order;
 
   return (
-    <View className="mb-4 p-4 bg-white rounded-sm overflow-hidden">
+    <View className="p-4 bg-white rounded-sm overflow-hidden">
       {/* <OrderHeader orderNo={orderNo} imageUrl={imageUrl} /> */}
 
       <ProductDetails
@@ -34,6 +34,7 @@ const Card = ({ order }) => {
           status={status ? status : ''}
           uom={uom ? uom : ''}
           qty={100}
+          onPress={onPress}
         />
     </View>
   );
