@@ -16,7 +16,9 @@ const ProductDetails = ({
   status,
   uom,
   qty,
-  onPress
+  onPress,
+  fromColor,
+  toColor,
 }) => {
   return (
     <View className="flex-1">
@@ -66,8 +68,8 @@ const ProductDetails = ({
       <View className="flex-row justify-between items-center pt-2.5">
         <ProductName productName={productName} />
         <TouchableOpacity>
-          <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
-            <Text className="text-[#03BA03] text-center text-base font-medium">
+          <View className="bg-[#DAE1E3] px-5 py-1 rounded-[4px] shadow-sm shadow-black/10">
+            <Text className="text-[#000000E5] text-center text-base font-medium">
               {status}
             </Text>
           </View>
@@ -85,9 +87,9 @@ const ProductDetails = ({
         </Text>
       </View>
       <View className="flex-row justify-between items-end">
-        <ZoneLabel prefix={"From"} zone={fromZone} />
+        <ZoneLabel prefix={"From"} zone={fromZone} color={fromColor} />
         <Seperation height={20} width={20} />
-        <ZoneLabel prefix={"To"} zone={"Zone B"} />
+        <ZoneLabel prefix={"To"} zone={"Zone B"} color={toColor} />
       </View>
     </View>
   );

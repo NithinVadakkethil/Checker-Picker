@@ -19,23 +19,25 @@ const Card = ({ order, onPress }) => {
     toArea,
     qty,
     hasLocationInfo,
+    fromColor,
+    toColor,
   } = order;
 
   return (
     <View className="p-4 bg-white rounded-sm overflow-hidden">
-      {/* <OrderHeader orderNo={orderNo} imageUrl={imageUrl} /> */}
-
       <ProductDetails
-          productName={productName ? productName : ''}
-          availableQty={availableQty ? availableQty : ''}
-          expiryDate={expiryDate ? expiryDate : ''}
-          orderNo={"1234567"}
-          fromZone={hasLocationInfo ? fromZone : null}
-          status={status ? status : ''}
-          uom={uom ? uom : ''}
-          qty={100}
-          onPress={onPress}
-        />
+        productName={productName ? productName : ""}
+        availableQty={availableQty ? availableQty : ""}
+        expiryDate={expiryDate ? expiryDate : ""}
+        orderNo={"1234567"}
+        fromZone={hasLocationInfo ? fromZone : null}
+        status={status ? status : ""}
+        uom={uom ? uom : ""}
+        qty={100}
+        onPress={onPress}
+        fromColor={fromColor}
+        toColor={toColor}
+      />
     </View>
   );
 };

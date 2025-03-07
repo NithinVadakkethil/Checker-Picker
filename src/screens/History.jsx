@@ -27,12 +27,11 @@ const History = () => {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="flex-1 px-4 pt-4">
-        <View className="flex-row justify-between items-center mb-4">
+    <View className="flex-1">
+        <View className="flex-row justify-between items-center mb-2">
           <Text className="text-2xl font-semibold">History</Text>
           <TouchableOpacity 
-            className="w-12 h-12 bg-white rounded-xl items-center justify-center"
+            className="p-2.5 bg-white rounded-xl items-center justify-center"
             onPress={() => console.log('Menu pressed')}
           >
             <Menu size={24} />
@@ -56,7 +55,6 @@ const History = () => {
           <View className="h-4" />
         </ScrollView>
       </View>
-    </SafeAreaView>
   );
 };
 

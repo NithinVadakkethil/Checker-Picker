@@ -3,7 +3,7 @@ import { View, FlatList, TouchableOpacity } from "react-native";
 import { Card, EditBottomSheet, CreateBottomSheet } from "../components";
 import Add from "../assets/icons/Add.svg";
 
-const DetailScreen = ({activeName}) => {
+const DetailScreen = ({ activeName }) => {
   // Create a reference to the bottom sheet
   const editBottomSheetRef = useRef(null);
   const createBottomSheetRef = useRef(null);
@@ -39,17 +39,24 @@ const DetailScreen = ({activeName}) => {
       toArea: "Packing Delivery Area",
       qty: 100,
       hasLocationInfo: true,
+      fromColor: "#2F80ED",
+      toColor: "#EB5B00",
     },
   ];
-
-  console.log("selectedName---->", activeName)
 
   return (
     <View className="flex-1 relative">
       <FlatList
         data={orders}
         keyExtractor={(item) => item.id.toString()} // Ensure key is a string
-        renderItem={({ item }) => <Card order={item} onPress={editSheetOpen} />}
+        renderItem={({ item }) => (
+          <Card
+            order={item}
+            onPress={editSheetOpen}
+            fromColor={item.fromColor}
+            toColor={item.toColor}
+          />
+        )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
       />
