@@ -1,12 +1,13 @@
-import { View, FlatList, TouchableOpacity } from 'react-native';
-import React, {useRef} from 'react';
-import { TransferItem, CreateBottomSheet } from '../components';
+import { View, FlatList, TouchableOpacity } from "react-native";
+import React, { useRef } from "react";
+import { TransferItem, CreateBottomSheet } from "../components";
 import Add from "../assets/icons/Add.svg";
 
 const ZoneTransfer = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
   const transferItems = [
     {
+      id: 1,
       status: "Completed",
       fromZone: "Zone A1",
       fromColor: "#2F80ED",
@@ -16,6 +17,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         "https://cdn.builder.io/api/v1/image/assets/TEMP/09cd1b02dd637dcb8de157bb25ec89c157084cb6e51c4305c4d869d3697c7e20",
     },
     {
+      id: 2,
       status: "Completed",
       fromZone: "Zone A1",
       fromColor: "#2F80ED",
@@ -25,6 +27,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         "https://cdn.builder.io/api/v1/image/assets/TEMP/b7a271550450fe7e3c0c7dfba49016a109166026f4ab5c5d034da807001c529d",
     },
     {
+      id: 3,
       status: "Pending",
       fromZone: "Zone A1",
       fromColor: "#2F80ED",
@@ -34,6 +37,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         "https://cdn.builder.io/api/v1/image/assets/TEMP/b138c1b026bf46724a9740ec40de6c62f008f13ce869a8deb7817a63fc702932",
     },
     {
+      id: 4,
       status: "Pending",
       fromZone: "Picking Area",
       fromColor: "#2F80ED",
@@ -43,6 +47,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         "https://cdn.builder.io/api/v1/image/assets/TEMP/98c95ed96eed9d74e6e9823fa7558876716100a73fce4939928b20e260b9ef5e",
     },
     {
+      id: 5,
       status: "Pending",
       fromZone: "Zone A1",
       fromColor: "#2F80ED",
@@ -67,7 +72,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         data={transferItems}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={()=> onPress("", "Zone Transfer")}>
+          <TouchableOpacity onPress={() => onPress("", "Zone Transfer")}>
             <TransferItem
               status={item.status}
               fromZone={item.fromZone}
@@ -78,7 +83,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
           </TouchableOpacity>
         )}
         showsVerticalScrollIndicator={false}
-        // keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 30 }}
       />
       <TouchableOpacity

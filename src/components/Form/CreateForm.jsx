@@ -91,14 +91,6 @@ const CreateForm = ({ onClose }) => {
         />
       </FormGroup>
 
-      <FormGroup label="Qty">
-        <TextInput
-          className="border border-[#EFEFEF] bg-[#F8F9FC] rounded-[4px] px-4 py-3 text-gray-900"
-          placeholder="Enter Quantity"
-          keyboardType="numeric"
-        />
-      </FormGroup>
-
       {/* Save Button */}
       <TouchableOpacity
         // onPress={onSave}

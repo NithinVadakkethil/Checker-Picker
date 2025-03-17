@@ -9,7 +9,7 @@ const CreateBottomSheet = ({ bottomSheetRef, onClose }) => {
       {/* Bottom Sheet Component */}
       <RBSheet
         ref={bottomSheetRef} // Attach the reference
-        height={650} // Set the height of the bottom sheet
+        height={600} // Set the height of the bottom sheet
         closeOnDragDown={true} // Allow closing by dragging down
         animationType="slide" // Use slide animation
         closeOnPressMask={true}

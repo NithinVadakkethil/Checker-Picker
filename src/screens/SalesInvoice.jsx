@@ -48,7 +48,7 @@ const SalesInvoice = ({ navigation, onPress }) => {
           </TouchableOpacity>
         )}
         showsVerticalScrollIndicator={false}
-        // keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 30 }}
       />
       <TouchableOpacity
