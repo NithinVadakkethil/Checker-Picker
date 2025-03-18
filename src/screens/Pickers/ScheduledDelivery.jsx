@@ -1,7 +1,7 @@
 import { View, FlatList, TouchableOpacity } from "react-native";
 import React, { useRef } from "react";
-import { ScheduledDeliveryCard, CreateBottomSheet } from "../components";
-import Add from "../assets/icons/Add.svg";
+import { ScheduledDeliveryCard, CreateBottomSheet } from "../../components";
+import Add from "../../assets/icons/Add.svg";
 
 const ScheduledDelivery = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);

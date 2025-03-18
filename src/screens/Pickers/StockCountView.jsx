@@ -1,6 +1,6 @@
 import { View } from 'react-native'
 import React from 'react'
-import StockTable from '../components/Table/StockTable'
+import StockTable from '../../components/Table/StockTable'
 
 const StockCountView = () => {
   return (

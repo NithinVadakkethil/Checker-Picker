@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { View, FlatList, TouchableOpacity } from "react-native";
-import { Card, EditBottomSheet, CreateBottomSheet } from "../components";
-import Add from "../assets/icons/Add.svg";
+import { Card, EditBottomSheet, CreateBottomSheet } from "../../components";
+import Add from "../../assets/icons/Add.svg"
 
 const DetailScreen = ({ activeName }) => {
   // Create a reference to the bottom sheet

@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
-import Menu from "../assets/icons/menu.svg"
+import { useNavigation } from '@react-navigation/native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Menu from "../../assets/icons/menu.svg"
 
 const HistoryItem = ({ initials, text, time }) => (
   <View className="flex-row items-center p-4 bg-white rounded-lg mb-3">
@@ -15,6 +17,7 @@ const HistoryItem = ({ initials, text, time }) => (
 );
 
 const History = () => {
+  const navigation = useNavigation()
   const historyData = [
     { id: '1', text: 'Lorem ipsum dolor sit amet consectetur', time: '5min ago', initials: 'LI' },
     { id: '2', text: 'Lorem ipsum dolor sit amet consectetur', time: '5min ago', initials: 'LI' },
@@ -26,13 +29,22 @@ const History = () => {
     { id: '8', text: 'Lorem ipsum dolor sit amet consectetur', time: '5min ago', initials: 'LI' },
   ];
 
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("token"); // Clear token
+      navigation.replace("Login")
+    } catch (error) {
+      console.error("Logout Error:", error);
+    }
+  };
+
   return (
     <View className="flex-1">
         <View className="flex-row justify-between items-center mb-2">
           <Text className="text-2xl font-semibold">History</Text>
           <TouchableOpacity 
             className="p-2.5 bg-white rounded-xl items-center justify-center"
-            onPress={() => console.log('Menu pressed')}
+            onPress={ handleLogout}
           >
             <Menu size={24} />
           </TouchableOpacity>

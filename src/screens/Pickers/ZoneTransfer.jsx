@@ -1,7 +1,7 @@
 import { View, FlatList, TouchableOpacity } from "react-native";
 import React, { useRef } from "react";
-import { TransferItem, CreateBottomSheet } from "../components";
-import Add from "../assets/icons/Add.svg";
+import { TransferItem, CreateBottomSheet } from "../../components";
+import Add from "../../assets/icons/Add.svg";
 
 const ZoneTransfer = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
