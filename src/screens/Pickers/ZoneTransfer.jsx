@@ -1,62 +1,79 @@
 import { View, FlatList, TouchableOpacity } from "react-native";
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { TransferItem, CreateBottomSheet } from "../../components";
+import { apiGet } from "../../utils/apiService";
 import Add from "../../assets/icons/Add.svg";
 
 const ZoneTransfer = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
-  const transferItems = [
-    {
-      id: 1,
-      status: "Completed",
-      fromZone: "Zone A1",
-      fromColor: "#2F80ED",
-      toZone: "Zone B1",
-      toColor: "#EB5B00",
-      imageUri:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/09cd1b02dd637dcb8de157bb25ec89c157084cb6e51c4305c4d869d3697c7e20",
-    },
-    {
-      id: 2,
-      status: "Completed",
-      fromZone: "Zone A1",
-      fromColor: "#2F80ED",
-      toZone: "Zone C",
-      toColor: "#FFB200",
-      imageUri:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/b7a271550450fe7e3c0c7dfba49016a109166026f4ab5c5d034da807001c529d",
-    },
-    {
-      id: 3,
-      status: "Pending",
-      fromZone: "Zone A1",
-      fromColor: "#2F80ED",
-      toZone: "Zone D1",
-      toColor: "#DE64AC",
-      imageUri:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/b138c1b026bf46724a9740ec40de6c62f008f13ce869a8deb7817a63fc702932",
-    },
-    {
-      id: 4,
-      status: "Pending",
-      fromZone: "Picking Area",
-      fromColor: "#2F80ED",
-      toZone: "Sales Return",
-      toColor: "#DB0DDF",
-      imageUri:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/98c95ed96eed9d74e6e9823fa7558876716100a73fce4939928b20e260b9ef5e",
-    },
-    {
-      id: 5,
-      status: "Pending",
-      fromZone: "Zone A1",
-      fromColor: "#2F80ED",
-      toZone: "Damage",
-      toColor: "#FF2020",
-      imageUri:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/30aae5a562124ac772a9eaef056d4ff53faf64d282de813d7d215768164ef9d9",
-    },
-  ];
+  const [transferItems, setTransferItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const transformPayload = (orders) => {
+    if (!Array.isArray(orders)) return [];
+
+    return orders.flatMap((order) =>
+      order.product_lines.map((product) => ({
+        id: order.id,
+        move_id: product.move_id,
+        product_id: product.product_id,
+        product_name: product.product_name.trim(),
+        expiry_date: product.expiry_date || "",
+        qty: product.qty,
+        uom_name: product.uom_name,
+        uom_id: product.uom_id,
+        state: product.state,
+        reassign_reason: product.reassign_reason,
+        lot_id: product.lot_id || "",
+        lot_name: product.lot_name || "",
+        order_no: order.order_no, // Key for grouping
+        location_id: order.location_id,
+        location_name: order.location_name,
+        location_dest_id: order.location_dest_id,
+        location_dest_name: order.location_dest_name,
+      }))
+    );
+  };
+
+  const groupByOrderNo = (data) => {
+    const grouped = data.reduce((acc, item) => {
+      if (!acc[item.order_no]) {
+        acc[item.order_no] = [];
+      }
+      acc[item.order_no].push(item);
+      return acc;
+    }, {});
+
+    return Object.keys(grouped).map((order_no) => ({
+      order_no,
+      items: grouped[order_no], // All details for this order_no
+      state: grouped[order_no][0].state, // Take state from first item
+      from: grouped[order_no][0].location_name,
+      to: grouped[order_no][0].location_dest_name
+    }));
+  };
+
+  useEffect(() => {
+    const fetchTransferItems = async () => {
+      try {
+        const response = await apiGet("/picker/zone_all_tasks");
+        if (response?.payload) {
+          const transformedPayload = transformPayload(response.payload);
+          const groupedData = groupByOrderNo(transformedPayload);
+          setTransferItems(groupedData);
+        } else {
+          setTransferItems([]);
+        }
+      } catch (err) {
+        setError(err.message || "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransferItems();
+  }, []);
 
   const createSheetClose = () => {
     createBottomSheetRef.current.close();
@@ -70,14 +87,16 @@ const ZoneTransfer = ({ navigation, onPress }) => {
     <View className="flex-1">
       <FlatList
         data={transferItems}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.order_no}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onPress("", "Zone Transfer")}>
+          <TouchableOpacity
+            onPress={() => onPress("", "Zone Transfer", item.items)}
+          >
             <TransferItem
-              status={item.status}
-              fromZone={item.fromZone}
+              status={item.state === "picker_pending" ? "Pending" : "Completed"}
+              fromZone={item.from}
               fromColor={item.fromColor}
-              toZone={item.toZone}
+              toZone={item.to}
               toColor={item.toColor}
             />
           </TouchableOpacity>

@@ -3,10 +3,15 @@ import {
   ZoneTransfer,
   ScheduledDelivery,
   StockCountView,
-  History
+  History,
+  CheckerSalesInvoice,
+  CheckerZoneTransfer,
+  CheckerScheduledDelivery,
+  CheckerStockCountView,
+  CheckerHistory
 } from '../screens';
 
-const tabData = [
+export const pickersTabData = [
   {id: 1, name: 'Sales Invoice', component: SalesInvoice},
   {id: 2, name: 'Zone Transfer', component: ZoneTransfer},
   {id: 3, name: 'Scheduled Delivery', component: ScheduledDelivery},
@@ -14,4 +19,10 @@ const tabData = [
   {id: 5, name: 'History', component: History},
 ];
 
-export default tabData;
+export const checkersTabData = [
+  {id: 1, name: 'Sales Invoice', component: CheckerSalesInvoice},
+  {id: 2, name: 'Zone Transfer', component: CheckerZoneTransfer},
+  {id: 3, name: 'Scheduled Delivery', component: CheckerScheduledDelivery},
+  {id: 4, name: 'Stock Count View', component: CheckerStockCountView},
+  {id: 5, name: 'History', component: CheckerHistory},
+];

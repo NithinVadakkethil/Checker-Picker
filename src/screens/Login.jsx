@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Logo from "../assets/icons/LoginLogo.svg";
 import { loginUser } from "../api/AuthService";
@@ -22,7 +22,7 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
-    if (!credentials.username.trim() || !credentials.password.trim()) {
+    if (!credentials?.username.trim() || !credentials?.password.trim()) {
       toast.show("Username and Password are required!", {
         type: "danger",
       });
@@ -34,16 +34,18 @@ const Login = () => {
     setIsLoading(false);
 
     if (result?.success) {
-      toast.show("Login Successful! 🎉", {
-        type: "success",
-        placement: "top",
+      toast.show("Login Success", {
+        type: "Success",
+        // placement: "top",
       });
 
       setTimeout(() => {
-        navigation.replace("Tabs");
+        navigation.replace("Tabs", { userType: result.userType });
       }, 1500);
     } else {
-      Alert.alert("Login Failed", result.message);
+      toast.show(result.message, {
+        type: "error",
+      });
     }
   };
 

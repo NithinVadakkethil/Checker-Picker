@@ -19,10 +19,11 @@ const ProductDetails = ({
   onPress,
   fromColor,
   toColor,
+  toZone
 }) => {
   return (
     <View className="flex-1">
-      <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30 pb-2">
+      {/* <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30 pb-2">
         <OrderHeader orderNo={orderNo} />
         <TouchableOpacity onPress={onPress}>
           <View className="flex-row items-center gap-1 bg-[#FFF] border border-[#004CAB] p-1 rounded-[4px]">
@@ -53,7 +54,7 @@ const ProductDetails = ({
           <Text className="font-normal text-xs">Qty </Text>
           <Text className="text-[#000] font-bold text-xl">{qty}</Text>
         </Text>
-      </View>
+      </View> */}
       <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30 pb-2">
         <OrderHeader orderNo={orderNo} />
         <TouchableOpacity>
@@ -77,7 +78,7 @@ const ProductDetails = ({
       </View>
       <View className="flex-row justify-between py-4">
         <LabelInfo label={"Available Qty"} value={availableQty} />
-        <LabelInfo label={"UOM"} value={uom} />
+        <LabelInfo label={"UOM"} value={`${qty} ${uom}`} />
       </View>
       <View className="flex-row justify-between items-center">
         <LabelInfo label={"Expiry Date"} value={expiryDate} />
@@ -89,7 +90,7 @@ const ProductDetails = ({
       <View className="flex-row justify-between items-end">
         <ZoneLabel prefix={"From"} zone={fromZone} color={fromColor} />
         <Seperation height={20} width={20} />
-        <ZoneLabel prefix={"To"} zone={"Zone B"} color={toColor} />
+        <ZoneLabel prefix={"To"} zone={toZone} color={toColor} />
       </View>
     </View>
   );

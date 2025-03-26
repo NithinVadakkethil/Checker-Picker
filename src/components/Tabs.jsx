@@ -1,26 +1,35 @@
 import { View, ScrollView, BackHandler, Text } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
+import { useRoute } from "@react-navigation/native";
+import { pickersTabData, checkersTabData } from "../constants/tabData";
 import TabItem from "./tabs/TabItem";
 import { DetailScreen } from "../screens";
 import Header from "./Header";
 
-const Tabs = ({ data, navigation }) => {
+const Tabs = ({ navigation }) => {
   const scrollRef = useRef(null);
+  const route = useRoute();
+  const userType = route?.params?.userType;
   const [activeIndex, setActiveIndex] = useState(0);
-  const [activeName, setActiveName] = useState("")
+  const [activeName, setActiveName] = useState("");
   const [tabHistory, setTabHistory] = useState([]);
   const [tabNameHistory, setTabNameHistory] = useState([]);
-  const [productLines, setProductLines] = useState([])
+  const [productLines, setProductLines] = useState([]);
 
-  const ActiveComponent = data[activeIndex]?.component; // Store the active component
+  const tabData =
+    userType === "picker" || userType === "administrator"
+      ? pickersTabData
+      : checkersTabData;
+
+  const ActiveComponent = tabData[activeIndex]?.component; // Store the active component
 
   const handleTabPress = (index, name, item) => {
-    if (index !== activeIndex || name !==activeName) {
+    if (index !== activeIndex || name !== activeName) {
       setTabHistory((prevHistory) => [...prevHistory, activeIndex]); // Store previous tab
       setTabNameHistory((prevHistory) => [...prevHistory, activeName]); // Store previous tab
       setActiveIndex(index);
-      setActiveName(name)
-      setProductLines(item)
+      setActiveName(name);
+      setProductLines(item);
       // Automatically scroll to active tab
       scrollRef.current?.scrollTo({
         x: index * 100, // Adjust based on your tab width
@@ -62,7 +71,7 @@ const Tabs = ({ data, navigation }) => {
 
   return (
     <View className="flex-1 bg-[#F1F1F1]">
-      <Header/>
+      <Header />
       {/* Scrollable Tab Bar */}
       <View className="border-b border-gray-300">
         <ScrollView
@@ -72,7 +81,7 @@ const Tabs = ({ data, navigation }) => {
           contentContainerStyle={{ paddingHorizontal: 10 }}
           className="flex-none"
         >
-          {data.map((item, index) => (
+          {tabData.map((item, index) => (
             <TabItem
               key={index}
               item={item}
@@ -88,9 +97,9 @@ const Tabs = ({ data, navigation }) => {
       {/* Tab Content */}
       <View className="flex-1 p-4">
         {ActiveComponent ? (
-          <ActiveComponent navigation={navigation} onPress={handleTabPress}/>
+          <ActiveComponent navigation={navigation} onPress={handleTabPress} />
         ) : (
-          <DetailScreen activeName={activeName} productLines={productLines}/>
+          <DetailScreen activeName={activeName} productLines={productLines} />
         )}
       </View>
     </View>

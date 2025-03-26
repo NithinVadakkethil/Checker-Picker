@@ -3,6 +3,7 @@ import "./global.css";
 import { SafeAreaView, StatusBar, Platform } from "react-native";
 import { ToastProvider } from "react-native-toast-notifications";
 import AppNavigator from "./src/navigation/AppNavigator";
+import { ToastContainer } from "./src/components";
 
 const App = () => {
   return (
@@ -17,10 +18,10 @@ const App = () => {
       >
         <ToastProvider
           placement="top" // Position: top, bottom, center
+          offset={60}
           duration={2000} // Auto-hide time
           animationType="slide-in" // Fade, zoom-in, slide-in
-          successColor="#4CAF50" // Green success toast
-          dangerColor="#FF5252" // Red error toast
+          renderToast={(toast) => <ToastContainer message={toast.message} type={toast.type} />}
         >
           <AppNavigator />
         </ToastProvider>

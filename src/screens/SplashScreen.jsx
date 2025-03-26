@@ -6,7 +6,8 @@ const SplashScreen = ({ navigation }) => {
   useEffect(() => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem("token");
-      navigation.replace(token ? "Tabs" : "Login"); // Redirect based on auth state
+      const userType = await AsyncStorage.getItem("user_type");
+      navigation.replace(token ? "Tabs" : "Login", { userType: userType }); // Redirect based on auth state
     };
 
     setTimeout(checkAuth, 2000); // Simulate a loading delay

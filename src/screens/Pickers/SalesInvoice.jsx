@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, FlatList, TouchableOpacity } from "react-native";
+import { View, FlatList, TouchableOpacity, Text } from "react-native";
 import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
 import Add from "../../assets/icons/Add.svg";
-import { Text } from "react-native-gesture-handler";
 
 const SalesInvoice = ({ onPress }) => {
   const createBottomSheetRef = useRef(null);
@@ -11,13 +10,61 @@ const SalesInvoice = ({ onPress }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const transformPayload = (orders) => {
+    if (!Array.isArray(orders)) return [];
+
+    return orders.flatMap(order =>
+      order.product_lines.map(product => ({
+        id: order.id,
+        move_id: product.move_id,
+        product_id: product.product_id,
+        product_name: product.product_name.trim(),
+        expiry_date: product.expiry_date || "",
+        qty: product.qty,
+        uom_name: product.uom_name,
+        uom_id: product.uom_id,
+        state: product.state,
+        reassign_reason: product.reassign_reason,
+        lot_id: product.lot_id || "",
+        lot_name: product.lot_name || "",
+        order_no: order.order_no, // Key for grouping
+        location_id: order.location_id,
+        location_name: order.location_name,
+        location_dest_id: order.location_dest_id,
+        location_dest_name: order.location_dest_name,
+      }))
+    );
+  };
+
+  const groupByOrderNo = (data) => {
+    const grouped = data.reduce((acc, item) => {
+      if (!acc[item.order_no]) {
+        acc[item.order_no] = [];
+      }
+      acc[item.order_no].push(item);
+      return acc;
+    }, {});
+
+    return Object.keys(grouped).map(order_no => ({
+      order_no,
+      items: grouped[order_no], // All details for this order_no
+      state: grouped[order_no][0].state, // Take state from first item
+    }));
+  };
+
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const data = await apiGet("/picker/sale_all_tasks");
-        setInvoices(data.payload);
+        const response = await apiGet("/picker/sale_all_tasks");
+        if (response?.payload) {
+          const transformedPayload = transformPayload(response.payload);
+          const groupedData = groupByOrderNo(transformedPayload);
+          setInvoices(groupedData);
+        } else {
+          setInvoices([]);
+        }
       } catch (err) {
-        setError(err);
+        setError(err.message || "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -26,27 +73,20 @@ const SalesInvoice = ({ onPress }) => {
     fetchInvoices();
   }, []);
 
-  // Function to close the bottom sheet
-  const createSheetClose = () => {
-    createBottomSheetRef.current.close();
-  };
-
-  const createSheetOpen = () => {
-    createBottomSheetRef.current.open();
-  };
+  console.log("invoices--->", invoices)
 
   return (
     <View className="flex-1 relative">
       {loading ? (
-        <Text>"loading....."</Text>
+        <Text>Loading...</Text>
       ) : error ? (
         <Text>{error}</Text>
       ) : (
         <FlatList
           data={invoices}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.order_no} // Unique by order_no
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => onPress("", "Sales Invoice", item)}>
+            <TouchableOpacity onPress={() => onPress("", "Sales Invoice", item.items)}>
               <OrderStatusCard
                 status={item.state === "picker_pending" ? "Pending" : "Completed"}
                 orderNumber={item.order_no}
@@ -59,14 +99,14 @@ const SalesInvoice = ({ onPress }) => {
         />
       )}
       <TouchableOpacity
-        onPress={createSheetOpen}
+        onPress={() => createBottomSheetRef.current.open()}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"
       >
         <Add />
       </TouchableOpacity>
       <CreateBottomSheet
-        onClose={createSheetClose}
-        onOpen={createSheetOpen}
+        onClose={() => createBottomSheetRef.current.close()}
+        onOpen={() => createBottomSheetRef.current.open()}
         bottomSheetRef={createBottomSheetRef}
       />
     </View>

@@ -1,9 +1,13 @@
 import React, { useRef } from "react";
 import { View, FlatList, TouchableOpacity } from "react-native";
-import { Card, EditBottomSheet, CreateBottomSheet } from "../../components";
-import Add from "../../assets/icons/Add.svg"
+import {
+  ProductDetails,
+  EditBottomSheet,
+  CreateBottomSheet,
+} from "../../components";
+import Add from "../../assets/icons/Add.svg";
 
-const DetailScreen = ({ activeName }) => {
+const DetailScreen = ({ activeName, productLines }) => {
   // Create a reference to the bottom sheet
   const editBottomSheetRef = useRef(null);
   const createBottomSheetRef = useRef(null);
@@ -44,18 +48,47 @@ const DetailScreen = ({ activeName }) => {
     },
   ];
 
+  const groupedProducts = Object.values(
+    productLines.reduce((acc, product) => {
+      const key = `${product.location_name}-${product.location_dest_name}`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(product);
+      return acc;
+    }, {})
+  );
+
+  console.log("productLines===>", productLines);
+
   return (
     <View className="flex-1 relative">
       <FlatList
-        data={orders}
-        keyExtractor={(item) => item.id.toString()} // Ensure key is a string
+        data={groupedProducts}
+        keyExtractor={(item, index) => `group-${index}`} // Ensure key is a string
         renderItem={({ item }) => (
-          <Card
-            order={item}
-            onPress={editSheetOpen}
-            fromColor={item.fromColor}
-            toColor={item.toColor}
-          />
+          // <Card
+          //   order={item}
+          //   onPress={editSheetOpen}
+          //   fromColor={item.fromColor}
+          //   toColor={item.toColor}
+          // />
+          <View className="p-4 bg-white rounded-sm overflow-hidden">
+            <ProductDetails
+              orderNo={item[0].order_no}
+              productName={item[0].product_name}
+              availableQty={item[0].available_qty}
+              expiryDate={item[0].expiry_date}
+              fromZone={item[0].location_name}
+              toZone={item[0].location_dest_name}
+              fromColor="purple" // Adjust color dynamically if needed
+              toColor="red"
+              uom={item[0].uom_name}
+              qty={item.reduce((sum, product) => sum + product.qty, 0)} // Sum quantity for grouped products
+              status={item[0].status}
+              onPress={editSheetOpen}
+            />
+          </View>
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
