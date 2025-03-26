@@ -27,26 +27,6 @@ const DetailScreen = ({ activeName, productLines }) => {
   const createSheetOpen = () => {
     createBottomSheetRef.current.open();
   };
-  // Sample data for demonstration
-  const orders = [
-    {
-      id: 1,
-      orderNo: "1234567",
-      productName: "Dairy Milk",
-      availableQty: 1500,
-      expiryDate: "12/12/25",
-      status: "Done",
-      uom: "50 Unit",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/ecccd287-25d4-403c-9e0b-ce302ae1d759?placeholderIfAbsent=true&apiKey=05f15ed087014a6a9f74a6d6a78953d9",
-      fromZone: "Zone A",
-      toArea: "Packing Delivery Area",
-      qty: 100,
-      hasLocationInfo: true,
-      fromColor: "#2F80ED",
-      toColor: "#EB5B00",
-    },
-  ];
 
   const groupedProducts = Object.values(
     productLines.reduce((acc, product) => {
@@ -59,7 +39,7 @@ const DetailScreen = ({ activeName, productLines }) => {
     }, {})
   );
 
-  console.log("productLines===>", productLines);
+  console.log("groupedProducts---->", groupedProducts)
 
   return (
     <View className="flex-1 relative">
@@ -67,12 +47,6 @@ const DetailScreen = ({ activeName, productLines }) => {
         data={groupedProducts}
         keyExtractor={(item, index) => `group-${index}`} // Ensure key is a string
         renderItem={({ item }) => (
-          // <Card
-          //   order={item}
-          //   onPress={editSheetOpen}
-          //   fromColor={item.fromColor}
-          //   toColor={item.toColor}
-          // />
           <View className="p-4 bg-white rounded-sm overflow-hidden">
             <ProductDetails
               orderNo={item[0].order_no}
@@ -85,7 +59,7 @@ const DetailScreen = ({ activeName, productLines }) => {
               toColor="red"
               uom={item[0].uom_name}
               qty={item.reduce((sum, product) => sum + product.qty, 0)} // Sum quantity for grouped products
-              status={item[0].status}
+              status={item[0].state === "picker_pending" ? "Pending" : "Done"}
               onPress={editSheetOpen}
             />
           </View>

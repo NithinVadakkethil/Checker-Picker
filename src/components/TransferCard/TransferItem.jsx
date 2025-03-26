@@ -19,7 +19,7 @@ const TransferItem = ({
       </View>
       <View className="flex-row justify-between items-center">
         <ZoneLabel prefix="From" zone={fromZone} color={fromColor} />
-        <ZoneLabel prefix="To" zone={toZone} color={toColor} />
+        <ZoneLabel prefix="To" zone={toZone} color={toColor} textAlign={"right"}/>
       </View>
     </View>
   );

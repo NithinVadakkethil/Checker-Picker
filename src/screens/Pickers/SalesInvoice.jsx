@@ -73,8 +73,6 @@ const SalesInvoice = ({ onPress }) => {
     fetchInvoices();
   }, []);
 
-  console.log("invoices--->", invoices)
-
   return (
     <View className="flex-1 relative">
       {loading ? (
