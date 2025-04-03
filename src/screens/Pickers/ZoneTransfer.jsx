@@ -113,9 +113,9 @@ const ZoneTransfer = ({ navigation, onPress }) => {
                   item.state === "picker_pending" ? "Pending" : "Completed"
                 }
                 fromZone={item.from}
-                fromColor={item.fromColor}
+                fromColor="#2F80ED" // Adjust color dynamically if needed
+                toColor="#EB5B00"
                 toZone={item.to}
-                toColor={item.toColor}
               />
             </TouchableOpacity>
           )}

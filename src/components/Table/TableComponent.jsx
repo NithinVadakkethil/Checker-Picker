@@ -1,184 +1,81 @@
-// import React, { useState } from "react";
-// import { ScrollView, View, TextInput } from "react-native";
-// import { Table, Row } from "react-native-table-component";
+import React, { useState, useEffect } from "react";
+import { FlatList, View, TextInput, Text } from "react-native";
 
-// const TableComponent = ({ tableHead, widthArr, tableData }) => {
-//   // Initialize state with "Current Stock" values
-//   const [stockValues, setStockValues] = useState(
-//     tableData?.map(row => row[1]) // Assuming "Current Stock" is at index 1
-//   );
+const TableComponent = ({ tableHead, tableData }) => {
+  const [stockValues, setStockValues] = useState([]);
 
-//   // Handle input change
-//   const handleStockChange = (text, index) => {
-//     const updatedStock = [...stockValues];
-//     updatedStock[index] = text;
-//     setStockValues(updatedStock);
-//   };
+  // Update stockValues when tableData is received
+  useEffect(() => {
+    if (tableData?.length > 0) {
+      setStockValues(tableData.map((row) => row[1]?.toString() || "")); // Ensure values are strings
+    }
+  }, [tableData]);
 
-//   return (
-//     <View className="flex-1">
-//       <ScrollView horizontal>
-//         <View>
-//           {/* Table Header */}
-//           <Table>
-//             <Row
-//               data={tableHead}
-//               widthArr={widthArr}
-//               style={{ backgroundColor: "#FFF", padding: 2 }}
-//               textStyle={{ fontWeight: "500", color: "#252525", fontSize: 12 }}
-//             />
-//           </Table>
-
-//           {/* Table Body */}
-//           <ScrollView className="mt-[-1px]">
-//             <Table>
-//               {tableData.map((rowData, index) => (
-//                 <View
-//                   key={index}
-//                   style={{
-//                     flexDirection: "row",
-//                     height: 32,
-//                     alignItems: "center",
-//                     borderBottomWidth: index === tableData.length - 1 ? 0 : 1,
-//                     borderBottomColor: "#CBCBCB",
-//                   }}
-//                 >
-//                   {/* Product Name */}
-//                   <View style={{ width: widthArr[0], paddingLeft: 8 }}>
-//                     <Row data={[rowData[0]]} textStyle={{ fontSize: 12, color: "#252525" }} />
-//                   </View>
-
-//                   {/* Current Stock - TextInput Field */}
-//                   <TextInput
-//                     style={{
-//                       width: widthArr[1],
-//                       height: 45,
-//                       textAlign: 'right',
-//                       fontSize: 12,
-//                     }}
-//                     value={stockValues[index]}
-//                     onChangeText={(text) => handleStockChange(text, index)}
-//                     keyboardType="numeric"
-//                   />
-
-//                   {/* Actual Field */}
-//                   <View style={{ width: widthArr[2]}}>
-//                     <Row data={[rowData[2]]} textStyle={{ fontSize: 12, color: "#252525", textAlign: 'right' }} />
-//                   </View>
-
-//                   {/* Balance */}
-//                   <View style={{ width: widthArr[3] }}>
-//                     <Row data={[rowData[3]]} textStyle={{ fontSize: 12, color: "#252525", textAlign: 'right' }} />
-//                   </View>
-//                 </View>
-//               ))}
-//             </Table>
-//           </ScrollView>
-//         </View>
-//       </ScrollView>
-//     </View>
-//   );
-// };
-
-// export default TableComponent;
-
-import React, { useState } from "react";
-import { ScrollView, View, TextInput } from "react-native";
-import { Table, Row } from "react-native-table-component";
-
-const TableComponent = ({ tableHead, widthArr, tableData }) => {
-  // Initialize state with "Current Stock" values
-  const [stockValues, setStockValues] = useState(
-    tableData?.map(row => row[1]) // Assuming "Current Stock" is at index 1
-  );
-
-  // Handle input change
   const handleStockChange = (text, index) => {
     const updatedStock = [...stockValues];
     updatedStock[index] = text;
     setStockValues(updatedStock);
   };
 
+  console.log("stockValues --->", stockValues);
+
+  const renderItem = ({ item, index }) => (
+    <View
+      key={index}
+      className="flex-row h-10 items-center border-b border-gray-300 px-2"
+    >
+      {/* Product Name */}
+      <Text className="flex-[2] text-left text-sm text-black">{item[0]}</Text>
+
+      {/* Current Stock - Editable with Proper Alignment */}
+      <View className="flex-[1]">
+        <TextInput
+          className="flex-[1] text-sm text-black text-center pb-2"
+          value={stockValues[index] || ""}
+          onChangeText={(text) => handleStockChange(text, index)}
+          keyboardType="numeric"
+        />
+      </View>
+
+      {/* Actual Field */}
+      <Text className="flex-[1] text-center text-sm text-black">{item[2]}</Text>
+
+      {/* Balance */}
+      <Text className="flex-[1] text-center text-sm text-black">{item[3]}</Text>
+    </View>
+  );
+
   return (
     <View className="flex-1">
-      <ScrollView horizontal>
-        <View>
-          {/* Table Header */}
-          <Table>
-            <Row
-              data={tableHead}
-              widthArr={widthArr}
-              style={{ backgroundColor: "#FFF", padding: 2 }}
-              textStyle={{ 
-                fontWeight: "500", 
-                color: "#252525", 
-                fontSize: 12, 
-                textAlign: 'left'  // Left-align header text
-              }}
-            />
-          </Table>
-
-          {/* Table Body */}
-          <ScrollView className="mt-[-1px]">
-            <Table>
-              {tableData.map((rowData, index) => (
-                <View
-                  key={index}
-                  style={{
-                    flexDirection: "row",
-                    height: 32,
-                    alignItems: "center",
-                    borderBottomWidth: index === tableData.length - 1 ? 0 : 1,
-                    borderBottomColor: "#CBCBCB",
-                  }}
-                >
-                  {/* Product Name */}
-                  <View style={{ width: widthArr[0], paddingLeft: 8, alignItems: "flex-start" }}>
-                    <Row 
-                      data={[rowData[0]]} 
-                      textStyle={{ fontSize: 12, color: "#252525", textAlign: "left" }} 
-                    />
-                  </View>
-
-                  {/* Current Stock - TextInput Field */}
-                  <View style={{ width: widthArr[1], alignItems: "flex-start", paddingLeft: 8 }}>
-                    <TextInput
-                      style={{
-                        height: 45,
-                        textAlign: "left",
-                        fontSize: 12,
-                      }}
-                      value={stockValues[index]}
-                      onChangeText={(text) => handleStockChange(text, index)}
-                      keyboardType="numeric"
-                    />
-                  </View>
-
-                  {/* Actual Field */}
-                  <View style={{ width: widthArr[2], alignItems: "flex-start", paddingLeft: 8 }}>
-                    <Row 
-                      data={[rowData[2]]} 
-                      textStyle={{ fontSize: 12, color: "#252525", textAlign: "left" }} 
-                    />
-                  </View>
-
-                  {/* Balance */}
-                  <View style={{ width: widthArr[3], alignItems: "flex-start", paddingLeft: 8 }}>
-                    <Row 
-                      data={[rowData[3]]} 
-                      textStyle={{ fontSize: 12, color: "#252525", textAlign: "left" }} 
-                    />
-                  </View>
-                </View>
-              ))}
-            </Table>
-          </ScrollView>
+      {/* Table Header */}
+      <View className="bg-gray-100 px-2 py-2 border-b border-gray-300">
+        <View className="flex-row">
+          <Text className="flex-[2] text-left font-semibold text-black text-sm">
+            {tableHead[0]}
+          </Text>
+          <Text className="flex-[1] text-center font-semibold text-black text-sm">
+            {tableHead[1]}
+          </Text>
+          <Text className="flex-[1] text-center font-semibold text-black text-sm">
+            {tableHead[2]}
+          </Text>
+          <Text className="flex-[1] text-center font-semibold text-black text-sm">
+            {tableHead[3]}
+          </Text>
         </View>
-      </ScrollView>
+      </View>
+
+      {/* Table Body */}
+      <FlatList
+        data={tableData}
+        renderItem={renderItem}
+        keyExtractor={(_, index) => index.toString()}
+        initialNumToRender={50} // Load initial 50 rows
+        maxToRenderPerBatch={20} // Load 20 more at a time
+        windowSize={5} // Keep a few screens in memory
+      />
     </View>
   );
 };
 
 export default TableComponent;
-
-

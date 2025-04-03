@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useRoute } from "@react-navigation/native";
 import { pickersTabData, checkersTabData } from "../constants/tabData";
 import TabItem from "./tabs/TabItem";
-import { DetailScreen } from "../screens";
+import { DetailScreen, CheckerDetailScreen } from "../screens";
 import Header from "./Header";
 
 const Tabs = ({ navigation }) => {
@@ -84,6 +84,8 @@ const Tabs = ({ navigation }) => {
     return () => backHandler.remove();
   }, [tabHistory, tabNameHistory]);
 
+  console.log("activeIndex---->", activeIndex)
+
   return (
     <View className="flex-1 bg-[#F1F1F1]">
       <Header />
@@ -113,6 +115,8 @@ const Tabs = ({ navigation }) => {
       <View className="flex-1 p-4">
         {ActiveComponent ? (
           <ActiveComponent navigation={navigation} onPress={handleTabPress} />
+        ) : activeIndex === 6 ? (
+          <CheckerDetailScreen activeName={activeName} productLines={productLines}/>
         ) : (
           <DetailScreen activeName={activeName} productLines={productLines} />
         )}

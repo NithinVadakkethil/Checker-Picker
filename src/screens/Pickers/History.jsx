@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -7,7 +6,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiGet } from "../../utils/apiService";
 import Menu from "../../assets/icons/menu.svg";
 
@@ -30,7 +28,6 @@ const HistoryItem = ({ initials, text, time, fromZone, toZone }) => (
 );
 
 const History = () => {
-  const navigation = useNavigation();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -84,16 +81,17 @@ const History = () => {
       .replace(/\[\d+\]\s*/, "")
       .replace(/["\t]/g, "")
       .trim();
-
+  
     // Split the words and take the first letter of each
     const initials = nameWithoutID
       .split(" ")
       .map((word) => word.charAt(0))
       .join("")
       .toUpperCase(); // Ensure uppercase initials
-
-    return initials;
-  };
+  
+    // Return only the first three characters
+    return initials.slice(0, 3);
+  };  
 
   const transformHistory = (orders) => {
     return orders.flatMap((order) =>
@@ -132,15 +130,6 @@ const History = () => {
     fetchHistory();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem("token"); // Clear token
-      navigation.replace("Login");
-    } catch (error) {
-      console.error("Logout Error:", error);
-    }
-  };
-
   return (
     <View className="flex-1">
       <View className="flex-row justify-between items-center mb-4">
@@ -148,12 +137,12 @@ const History = () => {
           <Text className="text-xl font-semibold">History</Text>
           <Text className="text-base font-normal">Last 7 days</Text>
         </View>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           className="p-2.5 bg-white rounded-xl items-center justify-center"
           onPress={handleLogout}
         >
           <Menu size={24} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       {loading || error ? (
         <View className="flex-1 justify-center items-center">

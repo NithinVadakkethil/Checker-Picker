@@ -2,37 +2,43 @@ import React, { useState, useEffect} from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import StockTable from "../../components/Table/StockTable";
 import { apiGet } from "../../utils/apiService";
+import { debounce } from "lodash";
 
 const StockCountView = () => {
-  const [tableData, setTableData] = useState();
+  const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchInvoices = async () => {
-      try {
-        const response = await apiGet("/picker/get_product_qty");
-        if (response?.payload) {
-          const formattedData = response.payload.map((item) => [
-            item.product_name.trim(), // Product Name
-            item.on_hand_qty.toString(), // On Hand Quantity
-            item.reserved_qty.toString(), // Reserved Quantity
-            item.available_qty.toString(), // Available Quantity
-          ]);
+const setTableDataDebounced = debounce((data) => {
+  setTableData(data);
+}, 300); // Wait 300ms before updating state
 
-          setTableData(formattedData);
-        } else {
-          setTableData([]);
-        }
-      } catch (err) {
-        setError(err.message || "An error occurred");
-      } finally {
-        setLoading(false);
+useEffect(() => {
+  const fetchInvoices = async () => {
+    try {
+      const response = await apiGet("/picker/get_product_qty");
+      if (response?.payload) {
+        const formattedData = response?.payload?.map((item) => [
+          item.product_name.trim(),
+          item.on_hand_qty.toString(),
+          item.reserved_qty.toString(),
+          item.available_qty.toString(),
+        ]);
+        
+        setTableDataDebounced(formattedData); // Use debounced state update
+      } else {
+        setTableData([]);
       }
-    };
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchInvoices();
-  }, []);
+  fetchInvoices();
+}, []);
+
   return (
     <View className="flex-1">
       {loading || error ? (

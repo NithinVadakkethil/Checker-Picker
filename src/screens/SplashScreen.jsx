@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { View, Image, Dimensions, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BlurView } from "@react-native-community/blur";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -86,13 +85,6 @@ const SplashScreen = ({ navigation }) => {
           position: "absolute",
         }}
       />
-      {/* <BlurView
-        style={styles.blurOverlay}
-        blurType="light"
-        blurAmount={0}
-        reducedTransparencyFallbackColor="rgba(255, 255, 255, 0.1)"
-      /> */}
-
       <View className="flex-row items-center">
         {/* Animated Logo */}
         <Animated.View style={logoAnimatedStyle}>
