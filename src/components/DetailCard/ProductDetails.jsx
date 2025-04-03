@@ -20,20 +20,41 @@ const ProductDetails = ({
   fromColor,
   toColor,
   toZone,
+  onStatusChange,
+  moveId,
+  index,
 }) => {
   return (
     <View className="flex-1">
-      <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30 pb-2">
-        <OrderHeader orderNo={orderNo} />
-        <TouchableOpacity onPress={onPress}>
-          <View className="flex-row items-center gap-1 bg-[#FFF] border border-[#004CAB] p-1 rounded-[4px]">
-            <Edit size={16} />
-            <Text className="text-[#004CAB] text-center text-xs font-medium">
-              Edit
-            </Text>
-          </View>
-        </TouchableOpacity>
+      <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30">
+        {index === 0 && (
+          <>
+            <OrderHeader orderNo={orderNo} />
+            {status !== "Done" && (
+              <TouchableOpacity onPress={onPress} className="pb-1">
+                <View className="flex-row items-center gap-1 bg-[#FFF] border border-[#004CAB] p-1 rounded-[4px]">
+                  <Edit size={16} />
+                  <Text className="text-[#004CAB] text-center text-xs font-medium">
+                    Edit
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
       </View>
+      {index !== 0 && status !== "Done" && (
+        <View className="items-end pt-2">
+          <TouchableOpacity onPress={onPress}>
+            <View className="flex-row items-center gap-1 bg-[#FFF] border border-[#004CAB] p-1 rounded-[4px]">
+              <Edit size={16} />
+              <Text className="text-[#004CAB] text-center text-xs font-medium">
+                Edit
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
       <View className="flex-row justify-between items-center pt-2.5">
         <ProductName productName={productName} />
         {status === "Done" ? (
@@ -43,7 +64,7 @@ const ProductDetails = ({
             </Text>
           </View>
         ) : (
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => onStatusChange(moveId)}>
             <View className="bg-[#DAE1E3] px-5 py-1 rounded-[4px] shadow-sm shadow-black/10">
               <Text className="text-[#000000E5] text-center text-base font-medium">
                 Done

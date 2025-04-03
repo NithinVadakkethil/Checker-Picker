@@ -1,4 +1,10 @@
-import { View, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import React, { useRef, useState, useEffect } from "react";
 import { TransferItem, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
@@ -27,6 +33,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         reassign_reason: product.reassign_reason,
         lot_id: product.lot_id || "",
         lot_name: product.lot_name || "",
+        on_hand_qty: product.on_hand_qty,
         order_no: order.order_no, // Key for grouping
         location_id: order.location_id,
         location_name: order.location_name,
@@ -50,7 +57,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       items: grouped[order_no], // All details for this order_no
       state: grouped[order_no][0].state, // Take state from first item
       from: grouped[order_no][0].location_name,
-      to: grouped[order_no][0].location_dest_name
+      to: grouped[order_no][0].location_dest_name,
     }));
   };
 
@@ -85,26 +92,39 @@ const ZoneTransfer = ({ navigation, onPress }) => {
 
   return (
     <View className="flex-1">
-      <FlatList
-        data={transferItems}
-        keyExtractor={(item) => item.order_no}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => onPress("", "Zone Transfer", item.items)}
-          >
-            <TransferItem
-              status={item.state === "picker_pending" ? "Pending" : "Completed"}
-              fromZone={item.from}
-              fromColor={item.fromColor}
-              toZone={item.to}
-              toColor={item.toColor}
-            />
-          </TouchableOpacity>
-        )}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 30 }}
-      />
+      {loading || error ? (
+        <View className="flex-1 justify-center items-center">
+          {loading ? (
+            <ActivityIndicator size="large" color="#001C4F" />
+          ) : (
+            <Text className="text-red-500 text-lg">{error}</Text>
+          )}
+        </View>
+      ) : (
+        <FlatList
+          data={transferItems}
+          keyExtractor={(item) => item.order_no}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => onPress(5, "Zone Transfer", item.items)}
+            >
+              <TransferItem
+                status={
+                  item.state === "picker_pending" ? "Pending" : "Completed"
+                }
+                fromZone={item.from}
+                fromColor={item.fromColor}
+                toZone={item.to}
+                toColor={item.toColor}
+              />
+            </TouchableOpacity>
+          )}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 30 }}
+        />
+      )}
+
       <TouchableOpacity
         onPress={createSheetOpen}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"

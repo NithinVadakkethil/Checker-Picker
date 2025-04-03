@@ -11,7 +11,7 @@ const Tabs = ({ navigation }) => {
   const route = useRoute();
   const userType = route?.params?.userType;
   const [activeIndex, setActiveIndex] = useState(0);
-  const [activeName, setActiveName] = useState("");
+  const [activeName, setActiveName] = useState("Sales Invoice");
   const [tabHistory, setTabHistory] = useState([]);
   const [tabNameHistory, setTabNameHistory] = useState([]);
   const [productLines, setProductLines] = useState([]);
@@ -31,22 +31,36 @@ const Tabs = ({ navigation }) => {
       setActiveName(name);
       setProductLines(item);
       // Automatically scroll to active tab
-      scrollRef.current?.scrollTo({
-        x: index * 100, // Adjust based on your tab width
-        animated: true,
-      });
+      if (index <= 4) {
+        scrollRef.current?.scrollTo({
+          x: index * 100, // Adjust based on your tab width
+          animated: true,
+        });
+      }
     }
   };
 
   useEffect(() => {
     const backAction = () => {
-      if (tabHistory.length > 0 || tabNameHistory.length > 0) {
-        const previousTab = tabHistory[tabHistory.length - 1]; // Get last visited tab
-        const previousNameTab = tabNameHistory[tabNameHistory.length - 1]; // Get last visited tab
-        setTabHistory((prevHistory) => prevHistory.slice(0, -1)); // Remove last entry
-        setTabNameHistory((prevHistory) => prevHistory.slice(0, -1)); // Remove last entry
-        setActiveIndex(previousTab); // Go back to previous tab
-        setActiveName(previousNameTab); // Go back to previous tab
+      let newTabHistory = [...tabHistory];
+      let newTabNameHistory = [...tabNameHistory];
+
+      while (
+        newTabHistory.length > 0 &&
+        newTabHistory[newTabHistory.length - 1] > 4
+      ) {
+        newTabHistory.pop(); // Remove invalid tab index
+        newTabNameHistory.pop(); // Remove corresponding tab name
+      }
+
+      if (newTabHistory.length > 0) {
+        const previousTab = newTabHistory.pop(); // Get last valid tab index
+        const previousNameTab = newTabNameHistory.pop(); // Get last valid tab name
+
+        setTabHistory(newTabHistory);
+        setTabNameHistory(newTabNameHistory);
+        setActiveIndex(previousTab);
+        setActiveName(previousNameTab);
 
         // Ensure the tab bar scrolls to the previous tab
         setTimeout(() => {
@@ -54,10 +68,11 @@ const Tabs = ({ navigation }) => {
             x: previousTab * 100, // Adjust based on your tab width
             animated: true,
           });
-        }, 100); // Delay to allow state update before scrolling
+        }, 100);
 
         return true; // Prevent default back action
       }
+
       return false; // Exit the app if no history is present
     };
 

@@ -41,7 +41,7 @@ axiosInstance.interceptors.response.use(
       await AsyncStorage.removeItem("refresh_token");
 
       // 🚀 Optionally, redirect to Login Screen (use navigation if available)
-      // navigation.navigate("Login");
+      navigation.navigate("Login");
 
       return Promise.reject("Session expired. Please log in again.");
     }

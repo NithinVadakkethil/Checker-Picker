@@ -1,4 +1,4 @@
-import { View, FlatList, TouchableOpacity } from "react-native";
+import { View, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import React, { useRef, useState, useEffect } from "react";
 import { ScheduledDeliveryCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
@@ -27,6 +27,7 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
         reassign_reason: product.reassign_reason,
         lot_id: product.lot_id || "",
         lot_name: product.lot_name || "",
+        on_hand_qty: product.on_hand_qty,
         order_no: order.order_no, // Key for grouping
         location_id: order.location_id,
         location_name: order.location_name,
@@ -87,11 +88,19 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
 
   return (
     <View className="flex-1 relative">
-      <FlatList
+      {loading || error ? (
+        <View className="flex-1 justify-center items-center">
+          {loading ? (
+            <ActivityIndicator size="large" color="#001C4F" />
+          ) : (
+            <Text className="text-red-500 text-lg">{error}</Text>
+          )}
+        </View>
+      ) : (<FlatList
         data={deliveries}
         keyExtractor={(item) => item.order_no} // Unique by order_no
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onPress("", "Scheduled Delivery", item.items)}>
+          <TouchableOpacity onPress={() => onPress(5, "Scheduled Delivery", item.items)}>
             <ScheduledDeliveryCard
               status={item.state === "picker_pending" ? "Pending" : "Completed"}
               orderNumber={item.order_no}
@@ -103,7 +112,7 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
         showsVerticalScrollIndicator={false}
         // keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 30 }}
-      />
+      />)}
       <TouchableOpacity
         onPress={createSheetOpen}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"

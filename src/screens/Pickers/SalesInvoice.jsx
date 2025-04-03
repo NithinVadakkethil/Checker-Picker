@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, FlatList, TouchableOpacity, Text } from "react-native";
+import { View, FlatList, TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
 import Add from "../../assets/icons/Add.svg";
@@ -14,7 +14,7 @@ const SalesInvoice = ({ onPress }) => {
     if (!Array.isArray(orders)) return [];
 
     return orders.flatMap(order =>
-      order.product_lines.map(product => ({
+      order.product_lines?.map(product => ({
         id: order.id,
         move_id: product.move_id,
         product_id: product.product_id,
@@ -27,6 +27,7 @@ const SalesInvoice = ({ onPress }) => {
         reassign_reason: product.reassign_reason,
         lot_id: product.lot_id || "",
         lot_name: product.lot_name || "",
+        on_hand_qty: product.on_hand_qty,
         order_no: order.order_no, // Key for grouping
         location_id: order.location_id,
         location_name: order.location_name,
@@ -75,16 +76,20 @@ const SalesInvoice = ({ onPress }) => {
 
   return (
     <View className="flex-1 relative">
-      {loading ? (
-        <Text>Loading...</Text>
-      ) : error ? (
-        <Text>{error}</Text>
+      {loading || error ? (
+        <View className="flex-1 justify-center items-center">
+          {loading ? (
+            <ActivityIndicator size="large" color="#001C4F" />
+          ) : (
+            <Text className="text-red-500 text-lg">{error}</Text>
+          )}
+        </View>
       ) : (
         <FlatList
           data={invoices}
           keyExtractor={(item) => item.order_no} // Unique by order_no
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => onPress("", "Sales Invoice", item.items)}>
+            <TouchableOpacity onPress={() => onPress(5, "Sales Invoice", item.items)}>
               <OrderStatusCard
                 status={item.state === "picker_pending" ? "Pending" : "Completed"}
                 orderNumber={item.order_no}

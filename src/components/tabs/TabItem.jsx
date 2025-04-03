@@ -6,14 +6,14 @@ const TabItem = ({ item, index, activeIndex, onPress, activeName }) => {
 
   return (
     <TouchableOpacity
-      onPress={() => onPress(index)}
+      onPress={() => onPress(index, item.name)}
       className="px-2 pt-6"
-      style={{ minWidth: 100 }} // Adjust width for spacing
+      style={{ minWidth: 50 }} // Adjust width for spacing
     >
       <View className="items-center">
         <Text
           className={`text-nowrap ${
-            isActive ? "font-inter-light text-[16px] text-[#000]" : "text-[16px] text-[#000] opacity-50"
+            isActive ? "font-inter-light text-[14px] text-[#000]" : "text-[14px] text-[#000] opacity-50"
           }`}
           numberOfLines={1}
           ellipsizeMode="tail"

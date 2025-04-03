@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, FlatList, TouchableOpacity } from "react-native";
+import { View, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
 import Add from "../../assets/icons/Add.svg";
@@ -7,77 +7,66 @@ import { Text } from "react-native-gesture-handler";
 
 const SalesInvoice = ({ onPress }) => {
   const createBottomSheetRef = useRef(null);
-  const [invoices, setInvoices] = useState([{
-    "id": 1678,
-    "order_no": "S08174",
-    "location_id": 8,
-    "location_name": "WH/Stock",
-    "location_dest_id": 5,
-    "location_dest_name": "Partners/Customers",
-    "product_lines": [
-        {
-            "move_id": 17536,
-            "product_id": 2645,
-            "product_name": "[1030]  MINIS - 24X500G ",
-            "expiry_date": "",
-            "qty": 1.0,
-            "uom_name": "Pcs",
-            "uom_id": 1,
-            "state": "picker_pending",
-            "reassign_reason": false,
-            "lot_id": "",
-            "lot_name": ""
-        }
-    ],
-    "state": "picker_pending"
-},
-{
-    "id": 1680,
-    "order_no": "S08175",
-    "location_id": 8,
-    "location_name": "WH/Stock",
-    "location_dest_id": 5,
-    "location_dest_name": "Partners/Customers",
-    "product_lines": [
-        {
-            "move_id": 17538,
-            "product_id": 2645,
-            "product_name": "[1030]  MINIS - 24X500G ",
-            "expiry_date": "",
-            "qty": 1.0,
-            "uom_name": "Pcs",
-            "uom_id": 1,
-            "state": "picker_pending",
-            "reassign_reason": false,
-            "lot_id": "",
-            "lot_name": ""
-        },
-        {
-            "move_id": 17539,
-            "product_id": 3526,
-            "product_name": "[1094] \"GALAXY JEWELS 8X400G\t\" ",
-            "expiry_date": "",
-            "qty": 1.0,
-            "uom_name": "Pcs",
-            "uom_id": 1,
-            "state": "picker_pending",
-            "reassign_reason": false,
-            "lot_id": "",
-            "lot_name": ""
-        }
-    ],
-    "state": "checker_reassign"
-}]);
+  const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const transformPayload = (orders) => {
+    if (!Array.isArray(orders)) return [];
+
+    return orders.flatMap(order =>
+      order.product_lines?.map(product => ({
+        id: order.id,
+        move_id: product.move_id,
+        product_id: product.product_id,
+        product_name: product.product_name.trim(),
+        expiry_date: product.expiry_date || "",
+        qty: product.qty,
+        uom_name: product.uom_name,
+        uom_id: product.uom_id,
+        state: product.state,
+        reassign_reason: product.reassign_reason,
+        lot_id: product.lot_id || "",
+        lot_name: product.lot_name || "",
+        on_hand_qty: product.on_hand_qty,
+        order_no: order.order_no, // Key for grouping
+        location_id: order.location_id,
+        location_name: order.location_name,
+        location_dest_id: order.location_dest_id,
+        location_dest_name: order.location_dest_name,
+      }))
+    );
+  };
+
+  const groupByOrderNo = (data) => {
+    const grouped = data?.reduce((acc, item) => {
+      if (!acc[item.order_no]) {
+        acc[item.order_no] = [];
+      }
+      acc[item.order_no].push(item);
+      return acc;
+    }, {});
+
+    return Object.keys(grouped).map(order_no => ({
+      order_no,
+      items: grouped[order_no], // All details for this order_no
+      state: grouped[order_no][0].state, // Take state from first item
+    }));
+  };
 
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const data = await apiGet("/checker/sale_all_tasks");
-        // setInvoices(data.payload);
+        const response = await apiGet("/checker/sale_all_tasks");
+        if (response?.payload) {
+          const transformedPayload = transformPayload(response.payload);
+          const groupedData = groupByOrderNo(transformedPayload);
+          setInvoices(groupedData);
+        } else {
+          setInvoices([]);
+        }
       } catch (err) {
-        setError(err);
+        setError(err.message || "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -99,14 +88,18 @@ const SalesInvoice = ({ onPress }) => {
 
   return (
     <View className="flex-1 relative">
-      {loading ? (
-        <Text>"loading....."</Text>
-      ) : error ? (
-        <Text>{error}</Text>
+      {loading || error ? (
+        <View className="flex-1 justify-center items-center">
+          {loading ? (
+            <ActivityIndicator size="large" color="#001C4F" />
+          ) : (
+            <Text className="text-red-500 text-lg">{error}</Text>
+          )}
+        </View>
       ) : (
         <FlatList
           data={invoices}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.order_no}
           renderItem={({ item }) => (
             <TouchableOpacity onPress={() => onPress("", "Sales Invoice", item)}>
               <OrderStatusCard
