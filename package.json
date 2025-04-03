@@ -12,7 +12,6 @@
   "dependencies": {
     "@gorhom/bottom-sheet": "^5.1.1",
     "@react-native-async-storage/async-storage": "^2.1.2",
-    "@react-native-community/blur": "^4.4.1",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/stack": "^7.1.1",
     "axios": "^1.8.1",
@@ -27,7 +26,6 @@
     "react-native-reanimated": "^3.17.0",
     "react-native-safe-area-context": "^5.2.0",
     "react-native-svg": "^15.11.2",
-    "react-native-table-component": "^1.2.2",
     "react-native-toast-notifications": "^3.4.0",
     "react-native-vector-icons": "^10.2.0"
   },

@@ -118,7 +118,7 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
         data={dummyData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onPress("", "Scheduled Delivery")}>
+          <TouchableOpacity onPress={() => onPress(6, "Scheduled Delivery", item)}>
             <ScheduledDeliveryCard
               status={item.status}
               orderNumber={item.orderNo}

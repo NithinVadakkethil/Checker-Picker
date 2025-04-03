@@ -72,7 +72,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         data={transferItems}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onPress("", "Zone Transfer")}>
+          <TouchableOpacity onPress={() => onPress(6, "Zone Transfer", item)}>
             <TransferItem
               status={item.status}
               fromZone={item.fromZone}
