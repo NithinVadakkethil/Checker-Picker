@@ -11,3 +11,4 @@ export { default as CreateBottomSheet } from './BottomSheets/CreateBottomSheet';
 export { default as ScheduledDeliveryCard } from './ScheduledDeliveryCard/ScheduledDeliveryCard';
 export { default as ToastContainer } from './Toast/ToastContainer';
 export { default as ProductDetails } from './DetailCard/ProductDetails';
+export { default as ReassignBottomSheet } from './BottomSheets/ReassignBottomSheet';

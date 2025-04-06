@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, FlatList, TouchableOpacity, Text, ActivityIndicator } from "react-native";
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+} from "react-native";
 import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
 import Add from "../../assets/icons/Add.svg";
@@ -13,8 +19,8 @@ const SalesInvoice = ({ onPress }) => {
   const transformPayload = (orders) => {
     if (!Array.isArray(orders)) return [];
 
-    return orders.flatMap(order =>
-      order.product_lines?.map(product => ({
+    return orders.flatMap((order) =>
+      order.product_lines?.map((product) => ({
         id: order.id,
         move_id: product.move_id,
         product_id: product.product_id,
@@ -46,11 +52,24 @@ const SalesInvoice = ({ onPress }) => {
       return acc;
     }, {});
 
-    return Object.keys(grouped).map(order_no => ({
-      order_no,
-      items: grouped[order_no], // All details for this order_no
-      state: grouped[order_no][0].state, // Take state from first item
-    }));
+    return Object.keys(grouped).map((order_no) => {
+      const items = grouped[order_no];
+      let state = "picker_done"; // default
+
+      if (items.some((item) => item.state === "picker_pending")) {
+        state = "picker_pending";
+      } else if (items.every((item) => item.state === "picker_done")) {
+        state = "picker_done";
+      } else {
+        state = items[0].state; // fallback if needed
+      }
+
+      return {
+        order_no,
+        items,
+        state,
+      };
+    });
   };
 
   useEffect(() => {
@@ -60,7 +79,17 @@ const SalesInvoice = ({ onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
-          setInvoices(groupedData);
+
+          // Sort: pending ("picker_pending") first, then others
+          const sortedData = groupedData.sort((a, b) => {
+            if (a.state === "picker_pending" && b.state !== "picker_pending")
+              return -1;
+            if (a.state !== "picker_pending" && b.state === "picker_pending")
+              return 1;
+            return 0; // keep order if same
+          });
+
+          setInvoices(sortedData);
         } else {
           setInvoices([]);
         }
@@ -74,6 +103,8 @@ const SalesInvoice = ({ onPress }) => {
     fetchInvoices();
   }, []);
 
+  console.log("invoices---->", invoices);
+
   return (
     <View className="flex-1 relative">
       {loading || error ? (
@@ -84,14 +115,22 @@ const SalesInvoice = ({ onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
+      ) : invoices.length < 1 ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-red-500 text-lg">No datas found</Text>
+        </View>
       ) : (
         <FlatList
           data={invoices}
           keyExtractor={(item) => item.order_no} // Unique by order_no
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => onPress(5, "Sales Invoice", item.items)}>
+            <TouchableOpacity
+              onPress={() => onPress(5, "Sales Invoice", item.items)}
+            >
               <OrderStatusCard
-                status={item.state === "picker_pending" ? "Pending" : "Completed"}
+                status={
+                  item.state === "picker_pending" ? "Pending" : "Completed"
+                }
                 orderNumber={item.order_no}
               />
             </TouchableOpacity>
@@ -101,12 +140,12 @@ const SalesInvoice = ({ onPress }) => {
           contentContainerStyle={{ paddingBottom: 30 }}
         />
       )}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={() => createBottomSheetRef.current.open()}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"
       >
         <Add />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <CreateBottomSheet
         onClose={() => createBottomSheetRef.current.close()}
         onOpen={() => createBottomSheetRef.current.open()}

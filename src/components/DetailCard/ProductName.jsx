@@ -5,7 +5,14 @@ const ProductName = ({ productName }) => {
   const screenWidth = Dimensions.get("window").width;
 
   // Dynamically adjust maxLength based on screen width
-  const maxLength = screenWidth < 360 ? 15 : screenWidth < 480 ? 40 : 60;
+  const maxLength =
+    screenWidth < 360
+      ? 15
+      : screenWidth < 400
+      ? 31
+      : screenWidth < 480
+      ? 40
+      : 60;
 
   const breakLongWords = (text, maxLength) => {
     if (!text) return "";

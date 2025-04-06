@@ -1,20 +1,24 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { View, FlatList, TouchableOpacity } from "react-native";
-import { Card, EditBottomSheet, CreateBottomSheet } from "../../components";
+import { ProductDetails, ReassignBottomSheet, CreateBottomSheet } from "../../components";
 import Add from "../../assets/icons/Add.svg"
+import { checkerReAssign } from "../../api/CommonService";
+import { useToast } from "react-native-toast-notifications";
 
-const DetailScreen = ({ activeName }) => {
+const DetailScreen = ({ activeName, productLines }) => {
+  const toast = useToast();
   // Create a reference to the bottom sheet
-  const editBottomSheetRef = useRef(null);
+  const reassignSheetRef = useRef(null);
   const createBottomSheetRef = useRef(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   // Function to close the bottom sheet
   const editSheetClose = () => {
-    editBottomSheetRef.current.close();
+    reassignSheetRef.current.close();
   };
 
-  const editSheetOpen = () => {
-    editBottomSheetRef.current.open();
+  const reassignSheetOpen = () => {
+    reassignSheetRef.current.open();
   };
   const createSheetClose = () => {
     createBottomSheetRef.current.close();
@@ -23,53 +27,111 @@ const DetailScreen = ({ activeName }) => {
   const createSheetOpen = () => {
     createBottomSheetRef.current.open();
   };
-  // Sample data for demonstration
-  const orders = [
-    {
-      id: 1,
-      orderNo: "1234567",
-      productName: "Dairy Milk",
-      availableQty: 1500,
-      expiryDate: "12/12/25",
-      status: "Done",
-      uom: "50 Unit",
-      imageUrl:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/ecccd287-25d4-403c-9e0b-ce302ae1d759?placeholderIfAbsent=true&apiKey=05f15ed087014a6a9f74a6d6a78953d9",
-      fromZone: "Zone A",
-      toArea: "Packing Delivery Area",
-      qty: 100,
-      hasLocationInfo: true,
-      fromColor: "#2F80ED",
-      toColor: "#EB5B00",
-    },
-  ];
+
+  const [groupedProducts, setGroupedProducts] = useState(() => {
+    return Object.values(
+      productLines?.reduce((acc, product) => {
+        const key = `${product.location_name}-${product.location_dest_name}`;
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(product);
+        return acc;
+      }, {})
+    );
+  });
+
+  const reAssignTask = async (moveId, reason) => {
+    const result = await checkerReAssign(moveId, reason);
+    if (result?.success) {
+      toast.show("Reassigned successfully", {
+        type: "Success",
+        // placement: "top",
+      });
+    }else {
+      toast.show(result.message, {
+        type: "error",
+      });
+    }
+  }
+
+  const updateProductStatus = async (orderNo) => {
+    const result = await checkerReAssign(orderNo, "Add 3 products");
+    if (result?.success) {
+      setGroupedProducts((prevGroups) =>
+        prevGroups.map((group) =>
+          group.map((product) =>
+            product.move_id === orderNo
+              ? { ...product, state: "done" }
+              : product
+          )
+        )
+      );
+      toast.show("Status updated successfully", {
+        type: "Success",
+        // placement: "top",
+      });
+    } else {
+      toast.show(result.message, {
+        type: "error",
+      });
+    }
+  };
 
   return (
     <View className="flex-1 relative">
       <FlatList
-        data={orders}
-        keyExtractor={(item) => item.id.toString()} // Ensure key is a string
-        renderItem={({ item }) => (
-          <Card
-            order={item}
-            onPress={editSheetOpen}
-            fromColor={item.fromColor}
-            toColor={item.toColor}
-          />
+        data={groupedProducts}
+        keyExtractor={(item, index) => `group-${index}`} // Ensure key is a string
+        renderItem={({ item, index }) => (
+          <View className="p-4 bg-white rounded-sm overflow-hidden">
+            <ProductDetails
+              index={index} // Pass index to ProductDetails
+              orderNo={index === 0 ? item[0].order_no : null}
+              moveId={item[0].move_id}
+              productName={item[0]?.product_name?.replace(/["\t]/g, "").trim()}
+              availableQty={item[0].on_hand_qty}
+              expiryDate={item[0].expiry_date}
+              fromZone={item[0].location_name}
+              toZone={item[0].location_dest_name}
+              fromColor="purple" // Adjust color dynamically if needed
+              toColor="red"
+              uom={item[0].uom_name}
+              pickerName={item[0].picker_name}
+              qty={item[0].qty} // Sum quantity for grouped products
+              status={item[0].state === "picker_done" ? "Pending" : "Done"}
+              onPress={() => {
+                setSelectedProduct({
+                  fromZone: item[0].location_name,
+                  toZone: item[0].location_dest_name,
+                  pickerName: item[0].picker_name,
+                  qty: item[0]?.qty?.toString(),
+                  moveId: item[0].move_id,
+                  batchNo: item[0].lot_name, // Assuming `lot_name` is the batch number
+                });
+                reassignSheetOpen(); // Open BottomSheet
+              }}
+              onStatusChange={updateProductStatus} // Pass function
+              type={"Checker"}
+            />
+          </View>
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
       />
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={createSheetOpen}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"
       >
         <Add />
-      </TouchableOpacity>
-      <EditBottomSheet
+      </TouchableOpacity> */}
+      <ReassignBottomSheet
         onClose={editSheetClose}
-        onOpen={editSheetOpen}
-        bottomSheetRef={editBottomSheetRef}
+        onOpen={reassignSheetOpen}
+        bottomSheetRef={reassignSheetRef}
+        selectedProduct={selectedProduct}
+        reAssignTask={reAssignTask}
+        setSelectedProduct={setSelectedProduct}
       />
       <CreateBottomSheet
         onClose={createSheetClose}

@@ -16,63 +16,60 @@ const SalesInvoice = ({ onPress }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const transformSalesInvoices = (data) => {
-    const ordersMap = new Map();
-  
-    data?.forEach((sale) => {
-      sale.pickings.forEach((picking) => {
-        const { order_no, sale_id, id, location_id, location_name, location_dest_id, location_dest_name, state, picker_id, picker_name, product_lines } = picking;
-  
-        if (!ordersMap.has(order_no)) {
-          ordersMap.set(order_no, {
-            sale_id,
-            order_no,
-            id,
-            location_id,
-            location_name,
-            location_dest_id,
-            location_dest_name,
-            state,
-            picker_id,
-            picker_name,
-            product_lines: [...product_lines], // Clone the array
-          });
-        } else {
-          // Merge product lines if order number already exists
-          ordersMap.get(order_no).product_lines.push(...product_lines);
-        }
-      });
-    });
-  
-    return Array.from(ordersMap.values());
+  const transformData = (apiResponse) => {
+    return apiResponse.flatMap((sale) =>
+      sale.pickings.flatMap((picking) =>
+        picking.product_lines.map((product) => ({
+          sale_id: sale.sale_id,
+          id: picking.id,
+          order_no: picking.order_no,
+          location_id: picking.location_id,
+          location_name: picking.location_name,
+          location_dest_id: picking.location_dest_id,
+          location_dest_name: picking.location_dest_name,
+          move_id: product.move_id,
+          product_id: product.product_id,
+          product_name: product.product_name,
+          on_hand_qty: product.on_hand_qty,
+          expiry_date: product.expiry_date,
+          qty: product.qty,
+          uom_name: product.uom_name,
+          uom_id: product.uom_id,
+          state: product.state,
+          reassign_reason: product.reassign_reason,
+          lot_id: product.lot_id,
+          lot_name: product.lot_name,
+          picker_id: picking.picker_id,
+          picker_name: picking.picker_name,
+        }))
+      )
+    );
   };
-  
-  
 
-  // const groupByOrderNo = (data) => {
-  //   const grouped = data?.reduce((acc, item) => {
-  //     if (!acc[item.order_no]) {
-  //       acc[item.order_no] = [];
-  //     }
-  //     acc[item.order_no].push(item);
-  //     return acc;
-  //   }, {});
-
-  //   return Object.keys(grouped).map((order_no) => ({
-  //     order_no,
-  //     items: grouped[order_no], // All details for this order_no
-  //     state: grouped[order_no][0].state, // Take state from first item
-  //   }));
-  // };
+  const groupByOrderNo = (data) => {
+    return Object.values(
+      data.reduce((acc, item) => {
+        if (!acc[item.order_no]) {
+          acc[item.order_no] = {
+            order_no: item.order_no,
+            status: item.state === "picker_done" ? "Completed" : "Reassign",
+            items: [], // Store all related items
+          };
+        }
+        acc[item.order_no].items.push(item); // Add item to the group
+        return acc;
+      }, {})
+    );
+  };
 
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
         const response = await apiGet("/checker/sale_all_tasks");
         if (response?.payload) {
-          const transformedPayload = transformSalesInvoices(response.payload);
-          // const groupedData = groupByOrderNo(transformedPayload);
-          setInvoices(transformedPayload);
+          const transformedPayload = transformData(response.payload);
+          const groupedData = groupByOrderNo(transformedPayload); // Group by order number
+          setInvoices(groupedData);
         } else {
           setInvoices([]);
         }
@@ -107,18 +104,20 @@ const SalesInvoice = ({ onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
+      ) : invoices.length < 1 ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-red-500 text-lg">No datas found</Text>
+        </View>
       ) : (
         <FlatList
           data={invoices}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.order_no}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => onPress(6, "Sales Invoice", item)}
+              onPress={() => onPress(6, "Sales Invoice", item.items)}
             >
               <OrderStatusCard
-                status={
-                  item.state === "picker_done" ? "Completed" : "Reassign"
-                }
+                status={item.status}
                 orderNumber={item.order_no}
               />
             </TouchableOpacity>
@@ -128,12 +127,12 @@ const SalesInvoice = ({ onPress }) => {
           contentContainerStyle={{ paddingBottom: 30 }}
         />
       )}
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={createSheetOpen}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"
       >
         <Add />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <CreateBottomSheet
         onClose={createSheetClose}
         onOpen={createSheetOpen}

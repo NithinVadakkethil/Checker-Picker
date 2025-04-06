@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { apiGet } from "../../utils/apiService";
 import Menu from "../../assets/icons/menu.svg";
+import { getTimeAgo } from "../../utils/common";
 
 const HistoryItem = ({ initials, text, time, fromZone, toZone }) => (
   <View className="flex-row items-center p-4 bg-white rounded-lg mb-3">
@@ -32,31 +33,23 @@ const History = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const transformPayload = (orders) => {
-    if (!Array.isArray(orders)) return [];
+  const transformHistoryData = (data) => {
+    const result = [];
 
-    return orders.flatMap((order) =>
-      order.product_lines?.map((product) => ({
-        id: order.id,
-        move_id: product.move_id,
-        product_id: product.product_id,
-        product_name: product.product_name.trim(),
-        expiry_date: product.expiry_date || "",
-        qty: product.qty,
-        uom_name: product.uom_name,
-        uom_id: product.uom_id,
-        state: product.state,
-        reassign_reason: product.reassign_reason,
-        lot_id: product.lot_id || "",
-        lot_name: product.lot_name || "",
-        on_hand_qty: product.on_hand_qty,
-        order_no: order.order_no, // Key for grouping
-        location_id: order.location_id,
-        location_name: order.location_name,
-        location_dest_id: order.location_dest_id,
-        location_dest_name: order.location_dest_name,
-      }))
-    );
+    data?.forEach((item) => {
+      item.products.forEach((product) => {
+        result.push({
+          ...item,
+          product_initials: generateInitials(product),
+          product_name: product.replace(/["\t]/g, "").trim(), // add one product at a time
+        });
+      });
+    });
+
+    return {
+      ...data,
+      payload: result,
+    };
   };
 
   const groupByOrderNo = (data) => {
@@ -76,22 +69,24 @@ const History = () => {
   };
 
   const generateInitials = (productName) => {
-    // Remove the ID part (e.g., "[1094]") and trim whitespace
     const nameWithoutID = productName
-      .replace(/\[\d+\]\s*/, "")
-      .replace(/["\t]/g, "")
+      .replace(/\[\d+\]\s*/, "")    // Remove [ID]
+      .replace(/["\t]/g, "")        // Remove quotes, tabs
+      .replace(/-/g, " ")           // Replace hyphens with space
       .trim();
   
-    // Split the words and take the first letter of each
-    const initials = nameWithoutID
-      .split(" ")
-      .map((word) => word.charAt(0))
-      .join("")
-      .toUpperCase(); // Ensure uppercase initials
+    // Filter out words that contain any digits (e.g., "24X500G")
+    const validWords = nameWithoutID
+      .split(/\s+/)
+      .filter(word => /^[A-Za-z]+$/.test(word)); // Keep only pure alphabetic words
   
-    // Return only the first three characters
-    return initials.slice(0, 3);
+    const initials = validWords
+      .map(word => word.charAt(0).toUpperCase())
+      .join("");
+  
+    return initials.slice(0, 3); // Return up to 3 characters
   };  
+    
 
   const transformHistory = (orders) => {
     return orders.flatMap((order) =>
@@ -113,10 +108,10 @@ const History = () => {
       try {
         const response = await apiGet("/picker/history");
         if (response?.payload) {
-          const transformedPayload = transformPayload(response.payload);
-          const groupedData = groupByOrderNo(transformedPayload);
-          const historyData = transformHistory(groupedData);
-          setHistory(historyData);
+          const transformedPayload = transformHistoryData(response.payload);
+          // const groupedData = groupByOrderNo(transformedPayload);
+          // const historyData = transformHistory(groupedData);
+          setHistory(transformedPayload);
         } else {
           setHistory([]);
         }
@@ -135,7 +130,7 @@ const History = () => {
       <View className="flex-row justify-between items-center mb-4">
         <View>
           <Text className="text-xl font-semibold">History</Text>
-          <Text className="text-base font-normal">Last 7 days</Text>
+          <Text className="text-base font-normal pt-1.5">Last 7 days</Text>
         </View>
         {/* <TouchableOpacity
           className="p-2.5 bg-white rounded-xl items-center justify-center"
@@ -152,9 +147,13 @@ const History = () => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
+      ) : history?.payload.length < 1 ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-red-500 text-lg">No datas found</Text>
+        </View>
       ) : (
         <FlatList
-          data={history}
+          data={history?.payload}
           keyExtractor={(item, index) => index} // Ensure key is a string
           renderItem={({ item }) => (
             <HistoryItem
@@ -163,7 +162,7 @@ const History = () => {
               text={`${item?.product_name} Transferred From Zone ${item.location_name} to Zone ${item.location_dest_name}`}
               fromZone={`Zone ${item.location_name}`}
               toZone={`Zone ${item.location_dest_name}`}
-              time={item.time || "5:00"}
+              time={getTimeAgo(item?.date)}
             />
           )}
           showsVerticalScrollIndicator={false}

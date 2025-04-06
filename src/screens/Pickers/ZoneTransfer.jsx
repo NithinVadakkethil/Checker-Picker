@@ -51,16 +51,29 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       acc[item.order_no].push(item);
       return acc;
     }, {});
-
-    return Object.keys(grouped).map((order_no) => ({
-      order_no,
-      items: grouped[order_no], // All details for this order_no
-      state: grouped[order_no][0].state, // Take state from first item
-      from: grouped[order_no][0].location_name,
-      to: grouped[order_no][0].location_dest_name,
-    }));
+  
+    return Object.keys(grouped).map((order_no) => {
+      const items = grouped[order_no];
+      let state = "picker_done"; // default state
+  
+      if (items.some(item => item.state === "picker_pending")) {
+        state = "picker_pending";
+      } else if (items.every(item => item.state === "picker_done")) {
+        state = "picker_done";
+      } else {
+        state = items[0].state; // fallback
+      }
+  
+      return {
+        order_no,
+        items,
+        state,
+        from: items[0].location_name,
+        to: items[0].location_dest_name,
+      };
+    });
   };
-
+  
   useEffect(() => {
     const fetchTransferItems = async () => {
       try {
@@ -68,7 +81,17 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
-          setTransferItems(groupedData);
+
+          // Sort: pending ("picker_pending") first, then others
+          const sortedData = groupedData.sort((a, b) => {
+            if (a.state === "picker_pending" && b.state !== "picker_pending")
+              return -1;
+            if (a.state !== "picker_pending" && b.state === "picker_pending")
+              return 1;
+            return 0; // keep order if same
+          });
+
+          setTransferItems(sortedData);
         } else {
           setTransferItems([]);
         }
@@ -100,6 +123,10 @@ const ZoneTransfer = ({ navigation, onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
+      )  : transferItems.length < 1 ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-red-500 text-lg">No datas found</Text>
+        </View>
       ) : (
         <FlatList
           data={transferItems}
@@ -125,12 +152,12 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         />
       )}
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={createSheetOpen}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"
       >
         <Add />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <CreateBottomSheet
         onClose={createSheetClose}
         onOpen={createSheetOpen}

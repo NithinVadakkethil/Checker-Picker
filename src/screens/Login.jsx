@@ -6,18 +6,21 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Image,
-  Dimensions
+  Dimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Logo from "../assets/icons/LoginLogo.svg";
+import EyeOpen from "../assets/icons/eyeopen.svg";
+import EyeClose from "../assets/icons/eyehide.svg";
 import { loginUser } from "../api/AuthService";
 import { useToast } from "react-native-toast-notifications";
-import gradient from "../assets/images/gradient.png"
+import gradient from "../assets/images/gradient.png";
 
 const Login = () => {
   const { width, height } = Dimensions.get("window");
   const navigation = useNavigation();
   const toast = useToast();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [credentials, setCredentials] = useState({
     username: "",
@@ -31,8 +34,13 @@ const Login = () => {
     }));
   };
 
+  const togglePasswordVisibility = () => {
+    setIsPasswordVisible((prevState) => !prevState);
+  };
+
   const handleLogin = async () => {
     if (!credentials?.username.trim() || !credentials?.password.trim()) {
+      toast.hideAll();
       toast.show("Username and Password are required!", {
         type: "danger",
       });
@@ -45,7 +53,7 @@ const Login = () => {
       credentials?.password
     );
     setIsLoading(false);
-
+    toast.hideAll();
     if (result?.success) {
       toast.show("Login Success", {
         type: "Success",
@@ -85,14 +93,26 @@ const Login = () => {
         />
 
         <Text className="text-sm font-bold text-black mt-5 mb-1">Password</Text>
-        <TextInput
-          className="w-full bg-gray-100 p-3 rounded-sm text-gray-500"
-          placeholder="Password"
-          placeholderTextColor="#aaa"
-          secureTextEntry
-          value={credentials.password} // Controlled input
-          onChangeText={(text) => handleChange("password", text)}
-        />
+        <View className="relative">
+          <TextInput
+            className="w-full bg-gray-100 p-3 rounded-sm text-gray-500 pr-10"
+            placeholder="Password"
+            placeholderTextColor="#aaa"
+            secureTextEntry={!isPasswordVisible}
+            value={credentials.password}
+            onChangeText={(text) => handleChange("password", text)}
+          />
+          <TouchableOpacity
+            onPress={togglePasswordVisibility}
+            className="absolute right-3 top-3"
+          >
+            {isPasswordVisible ? (
+              <EyeClose width={16} height={16} />
+            ) : (
+              <EyeOpen width={16} height={16} />
+            )}
+          </TouchableOpacity>
+        </View>
 
         {/* Login Button */}
         <TouchableOpacity
