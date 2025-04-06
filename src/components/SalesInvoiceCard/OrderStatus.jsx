@@ -3,8 +3,16 @@ import { View, Text } from "react-native";
 
 const OrderStatus = ({ status }) => {
   return (
-    <View className="bg-green-50 rounded-full px-3 py-1">
-      <Text className="text-green-600 text-sm font-medium">{status}</Text>
+    <View
+      className={`${
+        status === "Pending"
+          ? "bg-[#FF5353] px-5"
+          : status === "Reassign"
+          ? "bg-[#004CAB] px-4"
+          : "bg-[#249F10]"
+      } rounded-md px-3 py-1`}
+    >
+      <Text className="text-[#FFF] text-base font-medium">{status}</Text>
     </View>
   );
 };

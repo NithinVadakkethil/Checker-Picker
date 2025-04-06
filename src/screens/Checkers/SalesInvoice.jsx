@@ -1,0 +1,145 @@
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
+import { OrderStatusCard, CreateBottomSheet } from "../../components";
+import { apiGet } from "../../utils/apiService";
+import Add from "../../assets/icons/Add.svg";
+import { Text } from "react-native-gesture-handler";
+
+const SalesInvoice = ({ onPress }) => {
+  const createBottomSheetRef = useRef(null);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const transformData = (apiResponse) => {
+    return apiResponse.flatMap((sale) =>
+      sale.pickings.flatMap((picking) =>
+        picking.product_lines.map((product) => ({
+          sale_id: sale.sale_id,
+          id: picking.id,
+          order_no: picking.order_no,
+          location_id: picking.location_id,
+          location_name: picking.location_name,
+          location_dest_id: picking.location_dest_id,
+          location_dest_name: picking.location_dest_name,
+          move_id: product.move_id,
+          product_id: product.product_id,
+          product_name: product.product_name,
+          on_hand_qty: product.on_hand_qty,
+          expiry_date: product.expiry_date,
+          qty: product.qty,
+          uom_name: product.uom_name,
+          uom_id: product.uom_id,
+          state: product.state,
+          reassign_reason: product.reassign_reason,
+          lot_id: product.lot_id,
+          lot_name: product.lot_name,
+          picker_id: picking.picker_id,
+          picker_name: picking.picker_name,
+        }))
+      )
+    );
+  };
+
+  const groupByOrderNo = (data) => {
+    return Object.values(
+      data.reduce((acc, item) => {
+        if (!acc[item.order_no]) {
+          acc[item.order_no] = {
+            order_no: item.order_no,
+            status: item.state === "picker_done" ? "Completed" : "Reassign",
+            items: [], // Store all related items
+          };
+        }
+        acc[item.order_no].items.push(item); // Add item to the group
+        return acc;
+      }, {})
+    );
+  };
+
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const response = await apiGet("/checker/sale_all_tasks");
+        if (response?.payload) {
+          const transformedPayload = transformData(response.payload);
+          const groupedData = groupByOrderNo(transformedPayload); // Group by order number
+          setInvoices(groupedData);
+        } else {
+          setInvoices([]);
+        }
+      } catch (err) {
+        setError(err.message || "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInvoices();
+  }, []);
+
+  // Function to close the bottom sheet
+  const createSheetClose = () => {
+    createBottomSheetRef.current.close();
+  };
+
+  const createSheetOpen = () => {
+    createBottomSheetRef.current.open();
+  };
+
+  console.log("invoices--->", invoices);
+
+  return (
+    <View className="flex-1 relative">
+      {loading || error ? (
+        <View className="flex-1 justify-center items-center">
+          {loading ? (
+            <ActivityIndicator size="large" color="#001C4F" />
+          ) : (
+            <Text className="text-red-500 text-lg">{error}</Text>
+          )}
+        </View>
+      ) : invoices.length < 1 ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-red-500 text-lg">No datas found</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={invoices}
+          keyExtractor={(item) => item.order_no}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => onPress(6, "Sales Invoice", item.items)}
+            >
+              <OrderStatusCard
+                status={item.status}
+                orderNumber={item.order_no}
+              />
+            </TouchableOpacity>
+          )}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 30 }}
+        />
+      )}
+      {/* <TouchableOpacity
+        onPress={createSheetOpen}
+        className="absolute bottom-5 left-1/2 -translate-x-1/2"
+      >
+        <Add />
+      </TouchableOpacity> */}
+      <CreateBottomSheet
+        onClose={createSheetClose}
+        onOpen={createSheetOpen}
+        bottomSheetRef={createBottomSheetRef}
+      />
+    </View>
+  );
+};
+
+export default SalesInvoice;

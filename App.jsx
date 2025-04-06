@@ -1,14 +1,30 @@
-import React from 'react';
-import "./global.css"
-import { SafeAreaView, StatusBar, Platform } from 'react-native';
-import AppNavigator from './src/navigation/AppNavigator';
+import React from "react";
+import "./global.css";
+import { SafeAreaView, StatusBar, Platform } from "react-native";
+import { ToastProvider } from "react-native-toast-notifications";
+import AppNavigator from "./src/navigation/AppNavigator";
+import { ToastContainer } from "./src/components";
 
 const App = () => {
   return (
     <>
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      <SafeAreaView style={{ flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 }}>
-        <AppNavigator />
+      <StatusBar barStyle="dark-content" translucent backgroundColor="#FFF" />
+      <SafeAreaView
+        style={{
+          flex: 1,
+          backgroundColor: "#FFF",
+          paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        }}
+      >
+        <ToastProvider
+          placement="top" // Position: top, bottom, center
+          offset={60}
+          duration={2000} // Auto-hide time
+          animationType="slide-in" // Fade, zoom-in, slide-in
+          renderToast={(toast) => <ToastContainer message={toast.message} type={toast.type} />}
+        >
+          <AppNavigator />
+        </ToastProvider>
       </SafeAreaView>
     </>
   );

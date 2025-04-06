@@ -1,0 +1,26 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="16" height="16" fill="#C5C2C2"/>
+<g id="Sale invoice " clip-path="url(#clip0_74_4)">
+<rect width="412" height="917" transform="translate(-334 -170)" fill="#F1F1F1"/>
+<g id="Frame 654">
+<path d="M-318 -6C-318 -8.20914 -316.209 -10 -314 -10H58C60.2091 -10 62 -8.20914 62 -6V349C62 351.209 60.2091 353 58 353H-314C-316.209 353 -318 351.209 -318 349V-6Z" fill="white"/>
+<g id="Frame 42">
+<rect x="-4.25" y="-4.25" width="56.5" height="24.5" rx="4.25" stroke="#004CAB" stroke-width="0.5"/>
+<g id="Frame 40">
+<rect x="-4" y="-4" width="24" height="24" rx="4" fill="white"/>
+<g id="Edit" clip-path="url(#clip1_74_4)">
+<path id="Vector" d="M2 11.4998V13.9998H4.5L11.8767 6.62313L9.37667 4.12313L2 11.4998ZM13.8033 4.69647C14.0633 4.43647 14.0633 4.01313 13.8033 3.75313L12.2467 2.19646C11.9867 1.93646 11.5633 1.93646 11.3033 2.19646L10.0833 3.41646L12.5833 5.91646L13.8033 4.69647Z" fill="#004CAB"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_74_4">
+<rect width="412" height="917" fill="white" transform="translate(-334 -170)"/>
+</clipPath>
+<clipPath id="clip1_74_4">
+<rect width="16" height="16" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,24 +1,23 @@
-import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
-import {Tabs} from '../components';
-import {DetailScreen} from '../screens';
-import tabData from '../constants/tabData';
+import React from "react";
+import { createStackNavigator } from "@react-navigation/stack";
+import { NavigationContainer } from "@react-navigation/native";
+import { Tabs } from "../components";
+import { Login, SplashScreen } from "../screens";
 
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}}>
-        {/* <Stack.Screen name="Tabs">
-          {props => <Tabs {...props} data={tabData} />}
-        </Stack.Screen> */}
+      <Stack.Navigator
+        initialRouteName="Splash"
+        screenOptions={{ headerShown: false }}
+      >
         <Stack.Screen name="Tabs">
-          {props => <Tabs {...props} data={tabData} />}
+          {(props) => <Tabs {...props} />}
         </Stack.Screen>
-
-        <Stack.Screen name="Detail" component={DetailScreen} />
+        <Stack.Screen name="Splash" component={SplashScreen} />
+        <Stack.Screen name="Login" component={Login} />
       </Stack.Navigator>
     </NavigationContainer>
   );
