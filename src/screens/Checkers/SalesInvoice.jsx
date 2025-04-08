@@ -1,17 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   View,
+  Text,
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
+import { useListCount } from "../../context/ListCountContext";
 import Add from "../../assets/icons/Add.svg";
-import { Text } from "react-native-gesture-handler";
 
 const SalesInvoice = ({ onPress }) => {
   const createBottomSheetRef = useRef(null);
+  const { updateListCount } = useListCount();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,20 +49,42 @@ const SalesInvoice = ({ onPress }) => {
   };
 
   const groupByOrderNo = (data) => {
-    return Object.values(
-      data.reduce((acc, item) => {
-        if (!acc[item.order_no]) {
-          acc[item.order_no] = {
-            order_no: item.order_no,
-            status: item.state === "picker_done" ? "Completed" : "Reassign",
-            items: [], // Store all related items
-          };
-        }
-        acc[item.order_no].items.push(item); // Add item to the group
-        return acc;
-      }, {})
-    );
+    const grouped = data.reduce((acc, item) => {
+      if (!acc[item.order_no]) {
+        acc[item.order_no] = {
+          order_no: item.order_no,
+          items: [],
+        };
+      }
+      acc[item.order_no].items.push(item);
+      return acc;
+    }, {});
+  
+    const groupedArray = Object.values(grouped).map((group) => {
+      const hasPickerDone = group.items.some((item) => item.state === "picker_done");
+      const allReassigned = group.items.every((item) => item.state === "reassigned");
+  
+      let status = "In Progress";
+      if (hasPickerDone) status = "Completed";
+      else if (allReassigned) status = "Reassign";
+  
+      return {
+        ...group,
+        status,
+      };
+    });
+  
+    // Sort: Completed first, then Reassign, then In Progress
+    return groupedArray.sort((a, b) => {
+      const priority = {
+        Completed: 0,
+        Reassign: 1,
+        "In Progress": 2,
+      };
+      return priority[a.status] - priority[b.status];
+    });
   };
+  
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -69,6 +93,10 @@ const SalesInvoice = ({ onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformData(response.payload);
           const groupedData = groupByOrderNo(transformedPayload); // Group by order number
+          const completedCount = groupedData.filter(
+            (group) => group.status === "Completed"
+          ).length;
+          updateListCount("checkerSaleInvoice", completedCount);
           setInvoices(groupedData);
         } else {
           setInvoices([]);

@@ -11,7 +11,7 @@ export const loginUser = async (username, password) => {
 
     if (response?.data?.statusOk) {
       const { access_token, refresh_token } = response?.data?.payload?.token;
-      const userType = convertToLowerCase(response?.data?.payload?.name)
+      const userType = convertToLowerCase(response?.data?.payload?.user_type)
 
       // Store tokens in AsyncStorage
       await AsyncStorage.setItem("token", access_token);

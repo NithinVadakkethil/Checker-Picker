@@ -8,10 +8,12 @@ import {
 import React, { useRef, useState, useEffect } from "react";
 import { ScheduledDeliveryCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
+import { useListCount } from "../../context/ListCountContext";
 import Add from "../../assets/icons/Add.svg";
 
 const ScheduledDelivery = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
+  const { updateListCount } = useListCount();
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,20 +49,34 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
   };
 
   const groupByOrderNo = (data) => {
-    return Object.values(
-      data.reduce((acc, item) => {
-        if (!acc[item.order_no]) {
-          acc[item.order_no] = {
-            order_no: item.order_no,
-            status: item.state === "picker_done" ? "Completed" : "Reassign",
-            items: [], // Store all related items
-          };
-        }
-        acc[item.order_no].items.push(item); // Add item to the group
-        return acc;
-      }, {})
-    );
+    const grouped = data.reduce((acc, item) => {
+      if (!acc[item.order_no]) {
+        acc[item.order_no] = {
+          order_no: item.order_no,
+          items: [],
+        };
+      }
+      acc[item.order_no].items.push(item);
+      return acc;
+    }, {});
+  
+    const groupedArray = Object.values(grouped).map((group) => {
+      const hasPickerDone = group.items.some((item) => item.state === "picker_done");
+      return {
+        ...group,
+        status: hasPickerDone ? "Completed" : "Reassign",
+        // Optional: add more metadata here like date/time if needed
+      };
+    });
+  
+    // Sort to show Completed first
+    return groupedArray.sort((a, b) => {
+      if (a.status === "Completed" && b.status !== "Completed") return -1;
+      if (a.status !== "Completed" && b.status === "Completed") return 1;
+      return 0;
+    });
   };
+  
 
   useEffect(() => {
     const fetchDeliveries = async () => {
@@ -69,6 +85,11 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformData(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
+          const pendingCount = groupedData.filter(
+            (item) => item.status === "Completed"
+          ).length;
+  
+          updateListCount("checkerScheduledDelivery", pendingCount);
           setDeliveries(groupedData);
         } else {
           setDeliveries([]);
@@ -101,7 +122,7 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
-      ) : deliveries.length < 1 ? (
+      ) : deliveries?.length < 1 ? (
         <View className="flex-1 justify-center items-center">
           <Text className="text-red-500 text-lg">No datas found</Text>
         </View>

@@ -57,6 +57,7 @@ const DetailScreen = ({ activeName, productLines }) => {
           )
         )
       );
+      toast.hideAll();
       toast.show("Status updated successfully", {
         type: "Success",
         // placement: "top",

@@ -25,8 +25,9 @@ const ProductDetails = ({
   moveId,
   index,
   type,
-  pickerName
+  pickerName,
 }) => {
+  console.log("orderNo---->", orderNo)
   return (
     <View className="flex-1">
       <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30">
@@ -63,7 +64,7 @@ const ProductDetails = ({
           </TouchableOpacity>
         </View>
       )}
-      {index !== 0 && type === "Checker" && (
+      {!orderNo && type === "Checker" && (
         <View className="items-end pt-2">
           <TouchableOpacity onPress={onPress} className="pb-1">
             <Plus height={20} width={20} />
@@ -77,6 +78,12 @@ const ProductDetails = ({
             <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
               <Text className="text-[#03BA03] text-center text-base font-medium">
                 Verified
+              </Text>
+            </View>
+          ) : status === "Reassigned" ? (
+            <View className="bg-[#FFF] border border-[#004CAB] px-5 py-1 rounded-[4px]">
+              <Text className="text-[#004CAB] text-center text-base font-medium">
+                Reassigned
               </Text>
             </View>
           ) : (

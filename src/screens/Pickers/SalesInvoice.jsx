@@ -8,10 +8,12 @@ import {
 } from "react-native";
 import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
+import { useListCount } from "../../context/ListCountContext";
 import Add from "../../assets/icons/Add.svg";
 
 const SalesInvoice = ({ onPress }) => {
   const createBottomSheetRef = useRef(null);
+  const { updateListCount } = useListCount();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -79,7 +81,8 @@ const SalesInvoice = ({ onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
-
+          const pendingCount = groupedData.filter(item => item.state === "picker_pending").length;
+          updateListCount('saleInvoice', pendingCount);
           // Sort: pending ("picker_pending") first, then others
           const sortedData = groupedData.sort((a, b) => {
             if (a.state === "picker_pending" && b.state !== "picker_pending")

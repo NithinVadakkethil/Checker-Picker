@@ -8,10 +8,12 @@ import {
 import React, { useRef, useState, useEffect } from "react";
 import { TransferItem, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
+import { useListCount } from "../../context/ListCountContext";
 import Add from "../../assets/icons/Add.svg";
 
 const ZoneTransfer = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
+  const { updateListCount } = useListCount();
   const [transferItems, setTransferItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,7 +83,8 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
-
+          const pendingCount = groupedData.filter(item => item.state === "picker_pending").length;
+          updateListCount('zoneTransfer', pendingCount);
           // Sort: pending ("picker_pending") first, then others
           const sortedData = groupedData.sort((a, b) => {
             if (a.state === "picker_pending" && b.state !== "picker_pending")

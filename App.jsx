@@ -4,6 +4,7 @@ import { SafeAreaView, StatusBar, Platform } from "react-native";
 import { ToastProvider } from "react-native-toast-notifications";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { ToastContainer } from "./src/components";
+import { ListCountProvider } from "./src/context/ListCountContext";
 
 const App = () => {
   return (
@@ -19,11 +20,15 @@ const App = () => {
         <ToastProvider
           placement="top" // Position: top, bottom, center
           offset={60}
-          duration={2000} // Auto-hide time
+          duration={0} // Auto-hide time
           animationType="slide-in" // Fade, zoom-in, slide-in
-          renderToast={(toast) => <ToastContainer message={toast.message} type={toast.type} />}
+          renderToast={(toast) => (
+            <ToastContainer message={toast.message} type={toast.type} />
+          )}
         >
-          <AppNavigator />
+          <ListCountProvider>
+            <AppNavigator />
+          </ListCountProvider>
         </ToastProvider>
       </SafeAreaView>
     </>

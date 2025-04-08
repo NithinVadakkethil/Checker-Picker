@@ -8,10 +8,12 @@ import {
 import React, { useRef, useState, useEffect } from "react";
 import { TransferItem, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
+import { useListCount } from "../../context/ListCountContext";
 import Add from "../../assets/icons/Add.svg";
 
 const ZoneTransfer = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
+  const { updateListCount } = useListCount();
   const [transfers, setTransfers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -52,17 +54,28 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       acc[item.order_no].push(item);
       return acc;
     }, {});
-
-    return Object.keys(grouped).map((order_no) => ({
-      order_no,
-      items: grouped[order_no], // All details for this order_no
-      state:
-        grouped[order_no][0].state === "picker_done" ? "Completed" : "Reassign", // Take state from first item
-      toZone: grouped[order_no][0].location_dest_name,
-      fromZone: grouped[order_no][0].location_name,
-    }));
+  
+    const groupedArray = Object.keys(grouped).map((order_no) => {
+      const items = grouped[order_no];
+      const hasPickerDone = items.some((item) => item.state === "picker_done");
+  
+      return {
+        order_no,
+        items,
+        state: hasPickerDone ? "Completed" : "Reassign",
+        toZone: items[0].location_dest_name,
+        fromZone: items[0].location_name,
+      };
+    });
+  
+    // Sort so "Completed" comes first
+    return groupedArray.sort((a, b) => {
+      if (a.state === "Completed" && b.state !== "Completed") return -1;
+      if (a.state !== "Completed" && b.state === "Completed") return 1;
+      return 0;
+    });
   };
-
+  
   useEffect(() => {
     const fetchTransfers = async () => {
       try {
@@ -70,6 +83,10 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
+          const completedCount = groupedData.filter(
+            (group) => group.state === "Completed"
+          ).length;
+          updateListCount("checkerZoneTransfer", completedCount);
           setTransfers(groupedData);
         } else {
           setTransfers([]);

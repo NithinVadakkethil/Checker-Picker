@@ -8,10 +8,12 @@ import {
 import React, { useRef, useState, useEffect } from "react";
 import { ScheduledDeliveryCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
+import { useListCount } from "../../context/ListCountContext";
 import Add from "../../assets/icons/Add.svg";
 
 const ScheduledDelivery = ({ navigation, onPress }) => {
   const createBottomSheetRef = useRef(null);
+  const { updateListCount } = useListCount();
   const [deliveries, setDeliveries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -93,7 +95,8 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
-
+          const pendingCount = groupedData.filter(item => item.state === "picker_pending").length;
+          updateListCount('scheduledDelivery', pendingCount);
           // Sort: pending ("picker_pending") first, then others
           const sortedData = groupedData.sort((a, b) => {
             if (a.state === "picker_pending" && b.state !== "picker_pending")

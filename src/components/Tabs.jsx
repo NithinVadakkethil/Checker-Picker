@@ -1,7 +1,7 @@
 import { View, ScrollView, BackHandler, Text } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { useRoute } from "@react-navigation/native";
-import { pickersTabData, checkersTabData } from "../constants/tabData";
+import { usePickersTabData, usecheckersTabData } from "../constants/tabData";
 import TabItem from "./tabs/TabItem";
 import { DetailScreen, CheckerDetailScreen } from "../screens";
 import Header from "./Header";
@@ -18,8 +18,8 @@ const Tabs = ({ navigation }) => {
 
   const tabData =
     userType === "picker" || userType === "administrator"
-      ? pickersTabData
-      : checkersTabData;
+      ? usePickersTabData()
+      : usecheckersTabData();
 
   const ActiveComponent = tabData[activeIndex]?.component; // Store the active component
 
