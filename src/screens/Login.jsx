@@ -39,8 +39,8 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
+    toast.hideAll();
     if (!credentials?.username.trim() || !credentials?.password.trim()) {
-      toast.hideAll();
       toast.show("Username and Password are required!", {
         type: "danger",
       });

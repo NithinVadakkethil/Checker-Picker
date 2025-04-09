@@ -83,13 +83,21 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
-          const pendingCount = groupedData.filter(item => item.state === "picker_pending").length;
+          const pendingCount = groupedData.filter(
+            (item) => (item.state === "picker_pending" || item.state === "reassigned")
+          ).length;
           updateListCount('zoneTransfer', pendingCount);
           // Sort: pending ("picker_pending") first, then others
           const sortedData = groupedData.sort((a, b) => {
-            if (a.state === "picker_pending" && b.state !== "picker_pending")
+            if (
+              (a.state === "picker_pending" || a.state === "reassigned") &&
+              (b.state !== "picker_pending" || b.state !== "reassigned")
+            )
               return -1;
-            if (a.state !== "picker_pending" && b.state === "picker_pending")
+            if (
+              (a.state !== "picker_pending" || a.state !== "reassigned") &&
+              (b.state === "picker_pending" || b.state === "reassigned")
+            )
               return 1;
             return 0; // keep order if same
           });
@@ -140,7 +148,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
             >
               <TransferItem
                 status={
-                  item.state === "picker_pending" ? "Pending" : "Completed"
+                  item.state === "picker_pending" || item.state === "reassigned" ? "Pending" : "Completed"
                 }
                 fromZone={item.from}
                 fromColor="#2F80ED" // Adjust color dynamically if needed

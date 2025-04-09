@@ -107,7 +107,7 @@ const DetailScreen = ({ activeName, productLines }) => {
                     uom={product.uom_name}
                     qty={product.qty}
                     status={
-                      product.state === "picker_pending" ? "Pending" : "Done"
+                      (product.state === "picker_pending" || product.state === "reassigned") ? "Pending" : "Done"
                     }
                     onPress={editSheetOpen}
                     onStatusChange={updateProductStatus}

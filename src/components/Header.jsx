@@ -1,6 +1,7 @@
 import { TouchableOpacity, View, ActivityIndicator } from "react-native";
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { useToast } from "react-native-toast-notifications";
 import Logo from "../assets/icons/logo.svg";
 import Logout from "../assets/icons/logout.svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -9,9 +10,11 @@ import CheckmarkAnim from "../assets/animations/checkmark.json"; // import your 
 
 const Header = () => {
   const navigation = useNavigation();
+  const toast = useToast()
   const [status, setStatus] = useState("idle"); // "idle" | "loading" | "success"
 
   const handleLogout = async () => {
+    toast.hideAll()
     setStatus("loading");
     try {
       await AsyncStorage.removeItem("token");
@@ -26,6 +29,21 @@ const Header = () => {
       setStatus("idle");
     }
   };
+
+  const hide = ()=> {
+    toast.hideAll()
+  }
+
+  const handleExitPress = () => {
+    toast.hideAll()
+    toast.show("", {
+      type: "logout",
+      duration: 0,
+      offset: 160,
+      handleLogout: handleLogout,
+      hide: hide 
+    });
+  }
 
   const renderLogoutContent = () => {
     if (status === "loading") {
@@ -58,7 +76,7 @@ const Header = () => {
       }}
     >
       <Logo width={75} height={31} />
-      <TouchableOpacity onPress={handleLogout} disabled={status !== "idle"}>
+      <TouchableOpacity onPress={handleExitPress} disabled={status !== "idle"}>
         {renderLogoutContent()}
       </TouchableOpacity>
     </View>

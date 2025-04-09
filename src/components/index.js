@@ -12,3 +12,4 @@ export { default as ScheduledDeliveryCard } from './ScheduledDeliveryCard/Schedu
 export { default as ToastContainer } from './Toast/ToastContainer';
 export { default as ProductDetails } from './DetailCard/ProductDetails';
 export { default as ReassignBottomSheet } from './BottomSheets/ReassignBottomSheet';
+export { default as ConfirmationDialog } from './Toast/ConfirmationDialog';

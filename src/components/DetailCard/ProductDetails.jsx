@@ -27,14 +27,13 @@ const ProductDetails = ({
   type,
   pickerName,
 }) => {
-  console.log("orderNo---->", orderNo)
   return (
     <View className="flex-1">
       <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30">
         {orderNo && (
           <>
             <OrderHeader orderNo={orderNo} />
-            {type === "Checker" && (
+            {(type === "Checker" && status !== "Reassigned") && (
               <TouchableOpacity onPress={onPress} className="pb-1">
                 <Plus height={20} width={20} />
               </TouchableOpacity>
@@ -64,7 +63,7 @@ const ProductDetails = ({
           </TouchableOpacity>
         </View>
       )}
-      {!orderNo && type === "Checker" && (
+      {(!orderNo && type === "Checker" && status !== "Reassigned") && (
         <View className="items-end pt-2">
           <TouchableOpacity onPress={onPress} className="pb-1">
             <Plus height={20} width={20} />

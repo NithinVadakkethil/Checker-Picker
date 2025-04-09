@@ -8,6 +8,8 @@ const ReassignBottomSheet = ({
   selectedProduct,
   reAssignTask,
   setSelectedProduct,
+  errors,
+  setErrors,
 }) => {
   return (
     <View className="flex-1 items-center justify-center">
@@ -35,6 +37,8 @@ const ReassignBottomSheet = ({
           selectedProduct={selectedProduct}
           reAssignTask={reAssignTask}
           setSelectedProduct={setSelectedProduct}
+          errors={errors}
+          setErrors={setErrors}
         />
       </RBSheet>
     </View>

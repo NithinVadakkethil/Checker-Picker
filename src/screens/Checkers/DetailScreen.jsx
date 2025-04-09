@@ -1,19 +1,28 @@
 import React, { useRef, useState } from "react";
-import { View, FlatList, TouchableOpacity } from "react-native";
-import { ProductDetails, ReassignBottomSheet, CreateBottomSheet } from "../../components";
-import Add from "../../assets/icons/Add.svg"
-import { checkerReAssign } from "../../api/CommonService";
+import { View, FlatList } from "react-native";
+import {
+  ProductDetails,
+  ReassignBottomSheet,
+  CreateBottomSheet,
+} from "../../components";
+import Add from "../../assets/icons/Add.svg";
+import { checkerReAssign, checkerVerify } from "../../api/CommonService";
 import { useToast } from "react-native-toast-notifications";
 
 const DetailScreen = ({ activeName, productLines }) => {
   const toast = useToast();
-  // Create a reference to the bottom sheet
   const reassignSheetRef = useRef(null);
   const createBottomSheetRef = useRef(null);
+  const shownOrders = useRef(new Set());
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [errors, setErrors] = useState({
+    qty: "",
+    reason: "",
+  });
 
   // Function to close the bottom sheet
   const editSheetClose = () => {
+    setErrors({ qty: "", reason: "" });
     reassignSheetRef.current.close();
   };
 
@@ -41,30 +50,54 @@ const DetailScreen = ({ activeName, productLines }) => {
     );
   });
 
-  const reAssignTask = async (moveId, reason) => {
-    const result = await checkerReAssign(moveId, reason);
-    if (result?.success) {
-      toast.show("Reassigned successfully", {
-        type: "Success",
-        // placement: "top",
-      });
-    }else {
-      toast.show(result.message, {
-        type: "error",
-      });
-    }
-  }
+  const reAssignTask = async (moveId, reason, qty) => {
+    let valid = true;
+    const newErrors = { qty: "", reason: "" };
 
-  const updateProductStatus = async (orderNo) => {
-    const result = await checkerReAssign(orderNo, "Add 3 products");
-    toast.hideAll()
+    if (!qty || qty <= 0) {
+      newErrors.qty = "Please enter a valid quantity.";
+      valid = false;
+    }
+
+    if (!reason) {
+      newErrors.reason = "Please enter a reason.";
+      valid = false;
+    }
+
+    setErrors(newErrors);
+    if (valid) {
+      const result = await checkerReAssign(moveId, reason, qty);
+      if (result?.success) {
+        setGroupedProducts((prevGroups) =>
+          prevGroups.map((group) =>
+            group.map((product) =>
+              product.move_id === moveId
+                ? { ...product, state: "reassigned" }
+                : product
+            )
+          )
+        );
+        editSheetClose();
+        toast.show("Reassigned successfully", {
+          type: "Success",
+          // placement: "top",
+        });
+      } else {
+        toast.show(result.message, {
+          type: "error",
+        });
+      }
+    }
+  };
+
+  const updateProductStatus = async (saleId) => {
+    const result = await checkerVerify(saleId);
+    toast.hideAll();
     if (result?.success) {
       setGroupedProducts((prevGroups) =>
         prevGroups.map((group) =>
           group.map((product) =>
-            product.move_id === orderNo
-              ? { ...product, state: "done" }
-              : product
+            product.move_id === saleId ? { ...product, state: "done" } : product
           )
         )
       );
@@ -79,147 +112,67 @@ const DetailScreen = ({ activeName, productLines }) => {
     }
   };
 
-  console.log("productLines--->", productLines)
-
-  const shownOrders = useRef(new Set());
-
+  console.log("reassignSheetRef", reassignSheetRef?.current)
 
   return (
     <View className="flex-1 relative">
-      {/* <FlatList
+      <FlatList
         data={groupedProducts}
-        keyExtractor={(item, index) => `group-${index}`} // Ensure key is a string
-        // renderItem={({ item, index }) => (
-        //   <View className="p-4 bg-white rounded-sm overflow-hidden">
-        //     <ProductDetails
-        //       index={index} // Pass index to ProductDetails
-        //       orderNo={index === 0 ? item[0].order_no : null}
-        //       moveId={item[0].move_id}
-        //       productName={item[0]?.product_name?.replace(/["\t]/g, "").trim()}
-        //       availableQty={item[0].on_hand_qty}
-        //       expiryDate={item[0].expiry_date}
-        //       fromZone={item[0].location_name}
-        //       toZone={item[0].location_dest_name}
-        //       fromColor="purple" // Adjust color dynamically if needed
-        //       toColor="red"
-        //       uom={item[0].uom_name}
-        //       pickerName={item[0].picker_name}
-        //       qty={item[0].qty} // Sum quantity for grouped products
-        //       status={item[0].state === "picker_done" ? "Pending" : item[0].state === "reassigned" ? "Reassigned" : "Done"}
-        //       onPress={() => {
-        //         setSelectedProduct({
-        //           fromZone: item[0].location_name,
-        //           toZone: item[0].location_dest_name,
-        //           pickerName: item[0].picker_name,
-        //           qty: item[0]?.qty?.toString(),
-        //           moveId: item[0].move_id,
-        //           batchNo: item[0].lot_name, // Assuming `lot_name` is the batch number
-        //         });
-        //         reassignSheetOpen(); // Open BottomSheet
-        //       }}
-        //       onStatusChange={updateProductStatus} // Pass function
-        //       type={"Checker"}
-        //     />
-        //   </View>
-        // )}
-        renderItem={({ item, index }) => (
+        keyExtractor={(item, index) => `group-${index}`}
+        renderItem={({ item }) => (
           <View className="p-4 bg-white rounded-sm overflow-hidden">
-            {item.map((product, idx) => (
-              <ProductDetails
-                key={product.move_id}
-                index={idx}
-                orderNo={idx === 0 ? product.order_no : null}
-                moveId={product.move_id}
-                productName={product?.product_name?.replace(/["\t]/g, "").trim()}
-                availableQty={product.on_hand_qty}
-                expiryDate={product.expiry_date}
-                fromZone={product.location_name}
-                toZone={product.location_dest_name}
-                fromColor="purple"
-                toColor="red"
-                uom={product.uom_name}
-                pickerName={product.picker_name}
-                qty={product.qty}
-                status={
-                  product.state === "picker_done"
-                    ? "Pending"
-                    : product.state === "reassigned"
-                    ? "Reassigned"
-                    : "Done"
-                }
-                onPress={() => {
-                  setSelectedProduct({
-                    fromZone: product.location_name,
-                    toZone: product.location_dest_name,
-                    pickerName: product.picker_name,
-                    qty: product?.qty?.toString(),
-                    moveId: product.move_id,
-                    batchNo: product.lot_name,
-                  });
-                  reassignSheetOpen();
-                }}
-                onStatusChange={updateProductStatus}
-                type={"Checker"}
-              />
-            ))}
+            {item.map((product, idx) => {
+              const shouldShowOrderNo = !shownOrders.current.has(
+                product.order_no
+              );
+              if (shouldShowOrderNo) {
+                shownOrders.current.add(product.order_no);
+              }
+
+              return (
+                <ProductDetails
+                  key={product.move_id}
+                  orderNo={shouldShowOrderNo ? product.order_no : null}
+                  productName={product.product_name
+                    ?.replace(/["\t]/g, "")
+                    .trim()}
+                  availableQty={product.on_hand_qty}
+                  expiryDate={product.expiry_date}
+                  fromZone={product.location_name}
+                  toZone={product.location_dest_name}
+                  fromColor="purple"
+                  toColor="red"
+                  uom={product.uom_name}
+                  pickerName={product.picker_name}
+                  qty={product.qty}
+                  status={
+                    product.state === "picker_done"
+                      ? "Pending"
+                      : product.state === "reassigned"
+                      ? "Reassigned"
+                      : "Done"
+                  }
+                  onPress={() => {
+                    setSelectedProduct({
+                      fromZone: product.location_name,
+                      toZone: product.location_dest_name,
+                      pickerName: product.picker_name,
+                      qty: product.qty?.toString(),
+                      moveId: product.move_id,
+                      batchNo: product.lot_name,
+                    });
+                    reassignSheetOpen();
+                  }}
+                  onStatusChange={updateProductStatus}
+                  type={"Checker"}
+                />
+              );
+            })}
           </View>
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
-      /> */}
-      <FlatList
-  data={groupedProducts}
-  keyExtractor={(item, index) => `group-${index}`}
-  renderItem={({ item }) => (
-    <View className="p-4 bg-white rounded-sm overflow-hidden">
-      {item.map((product, idx) => {
-        const shouldShowOrderNo = !shownOrders.current.has(product.order_no);
-        if (shouldShowOrderNo) {
-          shownOrders.current.add(product.order_no);
-        }
-
-        return (
-          <ProductDetails
-            key={product.move_id}
-            orderNo={shouldShowOrderNo ? product.order_no : null}
-            productName={product.product_name?.replace(/["\t]/g, "").trim()}
-            availableQty={product.on_hand_qty}
-            expiryDate={product.expiry_date}
-            fromZone={product.location_name}
-            toZone={product.location_dest_name}
-            fromColor="purple"
-            toColor="red"
-            uom={product.uom_name}
-            pickerName={product.picker_name}
-            qty={product.qty}
-            status={
-              product.state === "picker_done"
-                ? "Pending"
-                : product.state === "reassigned"
-                ? "Reassigned"
-                : "Done"
-            }
-            onPress={() => {
-              setSelectedProduct({
-                fromZone: product.location_name,
-                toZone: product.location_dest_name,
-                pickerName: product.picker_name,
-                qty: product.qty?.toString(),
-                moveId: product.move_id,
-                batchNo: product.lot_name,
-              });
-              reassignSheetOpen();
-            }}
-            onStatusChange={updateProductStatus}
-            type={"Checker"}
-          />
-        );
-      })}
-    </View>
-  )}
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{ paddingBottom: 30 }}
-/>
+      />
 
       {/* <TouchableOpacity
         onPress={createSheetOpen}
@@ -234,6 +187,8 @@ const DetailScreen = ({ activeName, productLines }) => {
         selectedProduct={selectedProduct}
         reAssignTask={reAssignTask}
         setSelectedProduct={setSelectedProduct}
+        errors={errors}
+        setErrors={setErrors}
       />
       <CreateBottomSheet
         onClose={createSheetClose}
