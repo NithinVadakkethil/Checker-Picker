@@ -26,7 +26,19 @@ const ProductDetails = ({
   index,
   type,
   pickerName,
+  reAssigned,
 }) => {
+
+  const ReAsgnBadge = () => {
+    return (
+      <View className="flex items-center bg-re-badge rounded-full py-0.5 px-2">
+        <Text className="text-xs font-medium text-[#004CAB]">Reassigned</Text>
+      </View>
+    )
+  }
+
+  console.log("reAssigned-->", status)
+
   return (
     <View className="flex-1">
       <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30">
@@ -38,31 +50,9 @@ const ProductDetails = ({
                 <Plus height={20} width={20} />
               </TouchableOpacity>
             )}
-            {status !== "Done" && type !== "Checker" && (
-              <TouchableOpacity onPress={onPress} className="pb-1">
-                <View className="flex-row items-center gap-1 bg-[#FFF] border border-[#004CAB] p-1 rounded-[4px]">
-                  <Edit size={16} />
-                  <Text className="text-[#004CAB] text-center text-xs font-medium">
-                    Edit
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            )}
           </>
         )}
       </View>
-      {!orderNo && status !== "Done" && type !== "Checker" && (
-        <View className="items-end pt-2">
-          <TouchableOpacity onPress={onPress}>
-            <View className="flex-row items-center gap-1 bg-[#FFF] border border-[#004CAB] p-1 rounded-[4px]">
-              <Edit size={16} />
-              <Text className="text-[#004CAB] text-center text-xs font-medium">
-                Edit
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
       {(!orderNo && type === "Checker" && status !== "Reassigned") && (
         <View className="items-end pt-2">
           <TouchableOpacity onPress={onPress} className="pb-1">
@@ -97,7 +87,7 @@ const ProductDetails = ({
         </View>
       ) : (
         <View className="flex-row justify-between items-center pt-2.5">
-          <ProductName productName={productName} />
+          <ProductName productName={productName} badge={reAssigned  ? <ReAsgnBadge /> : null} />
           {status === "Done" ? (
             <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
               <Text className="text-[#03BA03] text-center text-base font-medium">

@@ -1,7 +1,7 @@
 import { Text, Dimensions } from "react-native";
 import React from "react";
 
-const ProductName = ({ productName }) => {
+const ProductName = ({ productName, badge }) => {
   const screenWidth = Dimensions.get("window").width;
 
   // Dynamically adjust maxLength based on screen width
@@ -23,7 +23,7 @@ const ProductName = ({ productName }) => {
   return (
     <>
       <Text className="text-[13px] font-normal text-[#00389D]">
-        {breakLongWords(productName, maxLength)}
+        {breakLongWords(productName, maxLength)} {badge}
       </Text>
     </>
   );

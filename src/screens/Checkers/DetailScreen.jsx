@@ -90,14 +90,14 @@ const DetailScreen = ({ activeName, productLines }) => {
     }
   };
 
-  const updateProductStatus = async (saleId) => {
-    const result = await checkerVerify(saleId);
+  const updateProductStatus = async (moveId) => {
+    const result = await checkerVerify(moveId);
     toast.hideAll();
     if (result?.success) {
       setGroupedProducts((prevGroups) =>
         prevGroups.map((group) =>
           group.map((product) =>
-            product.move_id === saleId ? { ...product, state: "done" } : product
+            product.move_id === moveId ? { ...product, state: "done" } : product
           )
         )
       );
@@ -111,8 +111,6 @@ const DetailScreen = ({ activeName, productLines }) => {
       });
     }
   };
-
-  console.log("reassignSheetRef", reassignSheetRef?.current)
 
   return (
     <View className="flex-1 relative">
@@ -132,6 +130,7 @@ const DetailScreen = ({ activeName, productLines }) => {
               return (
                 <ProductDetails
                   key={product.move_id}
+                  moveId={product.move_id}
                   orderNo={shouldShowOrderNo ? product.order_no : null}
                   productName={product.product_name
                     ?.replace(/["\t]/g, "")

@@ -45,9 +45,9 @@ export const checkerReAssign = async (id, note, quantity) => {
   }
 };
 
-export const checkerVerify = async (saleId) => {
+export const checkerVerify = async (moveId) => {
   try {
-    const response = await axiosInstance.patch(`/checker/verify_sale_picking/${saleId}`);
+    const response = await axiosInstance.patch(`/checker/update_product_verify_status/${moveId}`);
 
     console.log("Update Success:", response.data);
     if (response?.data?.statusOk) {

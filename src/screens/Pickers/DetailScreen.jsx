@@ -111,6 +111,7 @@ const DetailScreen = ({ activeName, productLines }) => {
                     }
                     onPress={editSheetOpen}
                     onStatusChange={updateProductStatus}
+                    reAssigned={product.state === "reassigned" ? true : false}
                   />
                 );
               }}

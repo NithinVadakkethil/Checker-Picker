@@ -5,6 +5,9 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      colors: {
+        're-badge': 'rgba(0, 76, 171, 0.17)',
+      },
       fontFamily: {
         poppins: [
           "Poppins-Regular",
