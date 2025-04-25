@@ -62,6 +62,8 @@ const SalesInvoice = ({ onPress }) => {
         state = "picker_pending";
       } else if (items.every((item) => item.state === "picker_done")) {
         state = "picker_done";
+      } else if (items.every((item) => item.state === "checker_verified")) {
+        state = "checker_verified";
       } else {
         state = items[0].state; // fallback if needed
       }
@@ -82,22 +84,20 @@ const SalesInvoice = ({ onPress }) => {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
           const pendingCount = groupedData.filter(
-            (item) => (item.state === "picker_pending" || item.state === "reassigned")
+            (item) =>
+              item.state === "picker_pending" || item.state === "reassigned"
           ).length;
           updateListCount("saleInvoice", pendingCount);
           // Sort: pending ("picker_pending") first, then others
           const sortedData = groupedData.sort((a, b) => {
-            if (
-              (a.state === "picker_pending" || a.state === "reassigned") &&
-              (b.state !== "picker_pending" || b.state !== "reassigned")
-            )
-              return -1;
-            if (
-              (a.state !== "picker_pending" || a.state !== "reassigned") &&
-              (b.state === "picker_pending" || b.state === "reassigned")
-            )
-              return 1;
-            return 0; // keep order if same
+            const priority = {
+              picker_pending: 0,
+              reassigned: 1,
+              picker_done: 2,
+              checker_verified: 3,
+            };
+
+            return priority[a.state] - priority[b.state];
           });
 
           setInvoices(sortedData);
@@ -113,8 +113,6 @@ const SalesInvoice = ({ onPress }) => {
 
     fetchInvoices();
   }, []);
-
-  console.log("invoices---->", invoices);
 
   return (
     <View className="flex-1 relative">
@@ -142,6 +140,8 @@ const SalesInvoice = ({ onPress }) => {
                 status={
                   item.state === "picker_pending" || item.state === "reassigned"
                     ? "Pending"
+                    : item.state === "checker_verified"
+                    ? "Verified"
                     : "Completed"
                 }
                 orderNumber={item.order_no}

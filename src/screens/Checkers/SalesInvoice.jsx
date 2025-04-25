@@ -64,7 +64,7 @@ const SalesInvoice = ({ onPress }) => {
       const hasPickerDone = group.items.some((item) => item.state === "picker_done");
       const allReassigned = group.items.every((item) => item.state === "reassigned");
   
-      let status = "In Progress";
+      let status = "Verified";
       if (hasPickerDone) status = "Completed";
       else if (allReassigned) status = "Reassign";
   
@@ -79,7 +79,7 @@ const SalesInvoice = ({ onPress }) => {
       const priority = {
         Completed: 0,
         Reassign: 1,
-        "In Progress": 2,
+        "Verified": 2,
       };
       return priority[a.status] - priority[b.status];
     });
@@ -119,8 +119,6 @@ const SalesInvoice = ({ onPress }) => {
   const createSheetOpen = () => {
     createBottomSheetRef.current.open();
   };
-
-  console.log("invoices--->", invoices);
 
   return (
     <View className="flex-1 relative">

@@ -71,8 +71,6 @@ const DetailScreen = ({ activeName, productLines }) => {
 
   const displayedOrderNos = new Set();
 
-  console.log("chekkersproductlines", productLines);
-
   return (
     <View className="flex-1 relative">
       <FlatList

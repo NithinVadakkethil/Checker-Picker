@@ -1,23 +1,57 @@
 import React, { useState, useEffect } from "react";
 import { FlatList, View, TextInput, Text } from "react-native";
+import { updateCurrentStock } from "../../api/CommonService";
+import { useToast } from "react-native-toast-notifications";
 
-const TableComponent = ({ tableHead, tableData }) => {
+const TableComponent = ({
+  tableHead,
+  tableData,
+  fetchInvoices,
+  saveStockToStorage,
+}) => {
+  const toast = useToast();
   const [stockValues, setStockValues] = useState([]);
+  const [loadingIndex, setLoadingIndex] = useState(null);
 
   // Update stockValues when tableData is received
   useEffect(() => {
     if (tableData?.length > 0) {
-      setStockValues(tableData.map((row) => row[1]?.toString() || "")); // Ensure values are strings
+      const initial = tableData.map((row) => ({
+        stock: row[1], // set current stock as 0
+        id: row[4], // new index for product ID (see below)
+      }));
+      setStockValues(initial);
     }
   }, [tableData]);
 
   const handleStockChange = (text, index) => {
     const updatedStock = [...stockValues];
-    updatedStock[index] = text;
+    updatedStock[index].stock = text;
     setStockValues(updatedStock);
   };
 
-  console.log("stockValues --->", stockValues);
+  const updateProductStock = async (id, quantity, index) => {
+    try {
+      setLoadingIndex(index);
+      const result = await updateCurrentStock(id, quantity);
+      if (result?.success) {
+        await saveStockToStorage(id, quantity);
+        toast.show("Stock updated", {
+          type: "Success",
+          // placement: "top",
+        });
+        fetchInvoices();
+      } else {
+        toast.show(result.message, {
+          type: "error",
+        });
+      }
+    } catch (error) {
+      toast.show("Something went wrong", { type: "error" });
+    } finally {
+      setLoadingIndex(null);
+    }
+  };
 
   const renderItem = ({ item, index }) => (
     <View
@@ -28,13 +62,26 @@ const TableComponent = ({ tableHead, tableData }) => {
       <Text className="flex-[2] text-left text-sm text-black">{item[0]}</Text>
 
       {/* Current Stock - Editable with Proper Alignment */}
-      <View className="flex-[1]">
-        <TextInput
-          className="flex-[1] text-sm text-black text-center pb-2"
-          value={stockValues[index] || ""}
-          onChangeText={(text) => handleStockChange(text, index)}
-          keyboardType="numeric"
-        />
+      <View className="flex-[1] justify-center items-center">
+        {loadingIndex === index ? (
+          <Text className="text-xs text-gray-500">Updating...</Text> // You can use ActivityIndicator too
+        ) : (
+          <TextInput
+            className="flex-[1] text-sm text-black text-center pb-2"
+            value={stockValues[index]?.stock || ""}
+            onChangeText={(text) => handleStockChange(text, index)}
+            keyboardType="numeric"
+            editable={loadingIndex !== index}
+            onSubmitEditing={() =>
+              updateProductStock(
+                stockValues[index].id,
+                stockValues[index].stock,
+                index
+              )
+            }
+            returnKeyType="done"
+          />
+        )}
       </View>
 
       {/* Actual Field */}

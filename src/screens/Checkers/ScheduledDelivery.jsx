@@ -62,18 +62,27 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
   
     const groupedArray = Object.values(grouped).map((group) => {
       const hasPickerDone = group.items.some((item) => item.state === "picker_done");
+      const allReassigned = group.items.every((item) => item.state === "reassigned");
+
+      let status = "Verified";
+      if (hasPickerDone) status = "Completed";
+      else if (allReassigned) status = "Reassign";
+
       return {
         ...group,
-        status: hasPickerDone ? "Completed" : "Reassign",
+        status
         // Optional: add more metadata here like date/time if needed
       };
     });
   
     // Sort to show Completed first
     return groupedArray.sort((a, b) => {
-      if (a.status === "Completed" && b.status !== "Completed") return -1;
-      if (a.status !== "Completed" && b.status === "Completed") return 1;
-      return 0;
+      const priority = {
+        Completed: 0,
+        Reassign: 1,
+        "Verified": 2,
+      };
+      return priority[a.status] - priority[b.status];
     });
   };
   

@@ -23,21 +23,18 @@ const ProductDetails = ({
   toZone,
   onStatusChange,
   moveId,
-  index,
+  doneFlag,
   type,
   pickerName,
   reAssigned,
 }) => {
-
   const ReAsgnBadge = () => {
     return (
       <View className="flex items-center bg-re-badge rounded-full py-0.5 px-2">
         <Text className="text-xs font-medium text-[#004CAB]">Reassigned</Text>
       </View>
-    )
-  }
-
-  console.log("reAssigned-->", status)
+    );
+  };
 
   return (
     <View className="flex-1">
@@ -45,24 +42,36 @@ const ProductDetails = ({
         {orderNo && (
           <>
             <OrderHeader orderNo={orderNo} />
-            {(type === "Checker" && status !== "Reassigned") && (
-              <TouchableOpacity onPress={onPress} className="pb-1">
-                <Plus height={20} width={20} />
-              </TouchableOpacity>
-            )}
+            {/* {type === "Checker" && doneFlag && (
+              <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
+                <Text className="text-[#03BA03] text-center text-base font-medium">
+                  Done
+                </Text>
+              </View>
+            )} */}
+            {type === "Checker" &&
+              status !== "Reassigned" &&
+              status !== "Done" && (
+                <TouchableOpacity onPress={onPress} className="pb-1">
+                  <Plus height={20} width={20} />
+                </TouchableOpacity>
+              )}
           </>
         )}
       </View>
-      {(!orderNo && type === "Checker" && status !== "Reassigned") && (
-        <View className="items-end pt-2">
-          <TouchableOpacity onPress={onPress} className="pb-1">
-            <Plus height={20} width={20} />
-          </TouchableOpacity>
-        </View>
-      )}
+      {!orderNo &&
+        type === "Checker" &&
+        status !== "Reassigned" &&
+        status !== "Done" && (
+          <View className="items-end pt-2">
+            <TouchableOpacity onPress={onPress} className="pb-1">
+              <Plus height={20} width={20} />
+            </TouchableOpacity>
+          </View>
+        )}
       {type === "Checker" ? (
         <View className="flex-row justify-between items-center pt-2.5">
-          <ProductName productName={productName} />
+          <ProductName productName={productName} status={status} />
           {status === "Done" ? (
             <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
               <Text className="text-[#03BA03] text-center text-base font-medium">
@@ -70,8 +79,8 @@ const ProductDetails = ({
               </Text>
             </View>
           ) : status === "Reassigned" ? (
-            <View className="bg-[#FFF] border border-[#004CAB] px-5 py-1 rounded-[4px]">
-              <Text className="text-[#004CAB] text-center text-base font-medium">
+            <View className="bg-[#FFF] border border-[#FF5353] px-5 py-1 rounded-[4px]">
+              <Text className="text-[#FF5353] text-center text-base font-medium">
                 Reassigned
               </Text>
             </View>
@@ -87,7 +96,10 @@ const ProductDetails = ({
         </View>
       ) : (
         <View className="flex-row justify-between items-center pt-2.5">
-          <ProductName productName={productName} badge={reAssigned  ? <ReAsgnBadge /> : null} />
+          <ProductName
+            productName={productName}
+            badge={reAssigned ? <ReAsgnBadge /> : null}
+          />
           {status === "Done" ? (
             <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
               <Text className="text-[#03BA03] text-center text-base font-medium">

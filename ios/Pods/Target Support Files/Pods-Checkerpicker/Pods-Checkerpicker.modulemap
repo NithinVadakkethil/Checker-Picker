@@ -1,0 +1,6 @@
+module Pods_Checkerpicker {
+  umbrella header "Pods-Checkerpicker-umbrella.h"
+
+  export *
+  module * { export * }
+}

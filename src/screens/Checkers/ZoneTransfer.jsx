@@ -58,21 +58,29 @@ const ZoneTransfer = ({ navigation, onPress }) => {
     const groupedArray = Object.keys(grouped).map((order_no) => {
       const items = grouped[order_no];
       const hasPickerDone = items.some((item) => item.state === "picker_done");
+      const allReassigned = items.every((item) => item.state === "reassigned");
   
+      let state = "Verified";
+      if (hasPickerDone) state = "Completed";
+      else if (allReassigned) state = "Reassign";
+
       return {
         order_no,
         items,
-        state: hasPickerDone ? "Completed" : "Reassign",
+        state,
         toZone: items[0].location_dest_name,
         fromZone: items[0].location_name,
       };
     });
   
-    // Sort so "Completed" comes first
+    // Sort: Completed first, then Reassign, then In Progress
     return groupedArray.sort((a, b) => {
-      if (a.state === "Completed" && b.state !== "Completed") return -1;
-      if (a.state !== "Completed" && b.state === "Completed") return 1;
-      return 0;
+      const priority = {
+        Completed: 0,
+        Reassign: 1,
+        "Verified": 2,
+      };
+      return priority[a.status] - priority[b.status];
     });
   };
   

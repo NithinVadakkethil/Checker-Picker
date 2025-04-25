@@ -8,20 +8,38 @@ import {
 } from "react-native";
 import { apiGet } from "../../utils/apiService";
 import Menu from "../../assets/icons/menu.svg";
+import Sale from "../../assets/icons/sale.svg";
+import Scheduled from "../../assets/icons/scheduled.svg";
+import Zone from "../../assets/icons/zone.svg";
 import { getTimeAgo } from "../../utils/common";
 
-const HistoryItem = ({ initials, text, time, fromZone, toZone }) => (
-  <View className="flex-row items-center p-4 bg-white rounded-lg mb-3">
-    <View className="w-12 h-12 rounded-full bg-[#F1F1F1] mr-4 items-center justify-center">
-      <Text className="text-[#0E0C0C] text-lg font-medium">{initials}</Text>
-    </View>
+const HistoryItem = ({ initials, time, orderNo, type }) => (
+  <View className="flex-row items-center p-4 bg-white rounded-lg mb-3 gap-3">
+    {initials === "Sale" ? (
+      <Sale />
+    ) : initials === "Zone" ? (
+      <Zone />
+    ) : (
+      <Scheduled />
+    )}
     <View className="flex-1">
       <Text className="text-sm font-inter mb-1">
-        {text.split(fromZone)[0]}
-        <Text className="text-[#000] font-bold">{fromZone}</Text>
-        {text.split(fromZone)[1].split(toZone)[0]}
-        <Text className="text-[#000] font-bold">{toZone}</Text>
-        {text.split(toZone)[1]}
+        {type === "Sale" ? (
+          <>
+            Sale Invoice <Text className="font-bold">{orderNo}</Text> is
+            Completed
+          </>
+        ) : type === "Zone" ? (
+          <>
+            Zone transfer <Text className="font-bold">{orderNo}</Text> is
+            Completed
+          </>
+        ) : (
+          <>
+            Scheduled Delivery <Text className="font-bold">{orderNo}</Text> is
+            Completed
+          </>
+        )}
       </Text>
       <Text className="text-[#8B8586] text-xs">{time}</Text>
     </View>
@@ -52,55 +70,23 @@ const History = () => {
     };
   };
 
-  const groupByOrderNo = (data) => {
-    const grouped = data?.reduce((acc, item) => {
-      if (!acc[item.order_no]) {
-        acc[item.order_no] = [];
-      }
-      acc[item.order_no].push(item);
-      return acc;
-    }, {});
-
-    return Object.keys(grouped).map((order_no) => ({
-      order_no,
-      items: grouped[order_no], // All details for this order_no
-      state: grouped[order_no][0].state, // Take state from first item
-    }));
-  };
-
   const generateInitials = (productName) => {
     const nameWithoutID = productName
-      .replace(/\[\d+\]\s*/, "")    // Remove [ID]
-      .replace(/["\t]/g, "")        // Remove quotes, tabs
-      .replace(/-/g, " ")           // Replace hyphens with space
+      .replace(/\[\d+\]\s*/, "") // Remove [ID]
+      .replace(/["\t]/g, "") // Remove quotes, tabs
+      .replace(/-/g, " ") // Replace hyphens with space
       .trim();
-  
+
     // Filter out words that contain any digits (e.g., "24X500G")
     const validWords = nameWithoutID
       .split(/\s+/)
-      .filter(word => /^[A-Za-z]+$/.test(word)); // Keep only pure alphabetic words
-  
-    const initials = validWords
-      .map(word => word.charAt(0).toUpperCase())
-      .join("");
-  
-    return initials.slice(0, 3); // Return up to 3 characters
-  };  
-    
+      .filter((word) => /^[A-Za-z]+$/.test(word)); // Keep only pure alphabetic words
 
-  const transformHistory = (orders) => {
-    return orders.flatMap((order) =>
-      order.items.map((item) => ({
-        id: order.id,
-        order_no: order.order_no,
-        product_name: item.product_name.replace(/["\t]/g, "").trim(),
-        product_initials: generateInitials(item?.product_name),
-        location_id: item.location_id,
-        location_name: item.location_name,
-        location_dest_id: item.location_dest_id,
-        location_dest_name: item.location_dest_name,
-      }))
-    );
+    const initials = validWords
+      .map((word) => word.charAt(0).toUpperCase())
+      .join("");
+
+    return initials.slice(0, 3); // Return up to 3 characters
   };
 
   useEffect(() => {
@@ -158,10 +144,9 @@ const History = () => {
           renderItem={({ item }) => (
             <HistoryItem
               key={item.id}
-              initials={item.product_initials || "IT"}
-              text={`${item?.product_name} Transferred From Zone ${item.location_name} to Zone ${item.location_dest_name}`}
-              fromZone={`Zone ${item.location_name}`}
-              toZone={`Zone ${item.location_dest_name}`}
+              initials={item.type}
+              type={item.type}
+              orderNo={item.order_no}
               time={getTimeAgo(item?.date)}
             />
           )}

@@ -53,19 +53,21 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       acc[item.order_no].push(item);
       return acc;
     }, {});
-  
+
     return Object.keys(grouped).map((order_no) => {
       const items = grouped[order_no];
       let state = "picker_done"; // default state
-  
-      if (items.some(item => item.state === "picker_pending")) {
+
+      if (items.some((item) => item.state === "picker_pending")) {
         state = "picker_pending";
-      } else if (items.every(item => item.state === "picker_done")) {
+      } else if (items.every((item) => item.state === "picker_done")) {
         state = "picker_done";
+      } else if (items.every((item) => item.state === "checker_verified")) {
+        state = "checker_verified";
       } else {
         state = items[0].state; // fallback
       }
-  
+
       return {
         order_no,
         items,
@@ -75,7 +77,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       };
     });
   };
-  
+
   useEffect(() => {
     const fetchTransferItems = async () => {
       try {
@@ -84,22 +86,20 @@ const ZoneTransfer = ({ navigation, onPress }) => {
           const transformedPayload = transformPayload(response.payload);
           const groupedData = groupByOrderNo(transformedPayload);
           const pendingCount = groupedData.filter(
-            (item) => (item.state === "picker_pending" || item.state === "reassigned")
+            (item) =>
+              item.state === "picker_pending" || item.state === "reassigned"
           ).length;
-          updateListCount('zoneTransfer', pendingCount);
+          updateListCount("zoneTransfer", pendingCount);
           // Sort: pending ("picker_pending") first, then others
           const sortedData = groupedData.sort((a, b) => {
-            if (
-              (a.state === "picker_pending" || a.state === "reassigned") &&
-              (b.state !== "picker_pending" || b.state !== "reassigned")
-            )
-              return -1;
-            if (
-              (a.state !== "picker_pending" || a.state !== "reassigned") &&
-              (b.state === "picker_pending" || b.state === "reassigned")
-            )
-              return 1;
-            return 0; // keep order if same
+            const priority = {
+              picker_pending: 0,
+              reassigned: 1,
+              picker_done: 2,
+              checker_verified: 3,
+            };
+
+            return priority[a.state] - priority[b.state];
           });
 
           setTransferItems(sortedData);
@@ -134,7 +134,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
-      )  : transferItems.length < 1 ? (
+      ) : transferItems.length < 1 ? (
         <View className="flex-1 justify-center items-center">
           <Text className="text-red-500 text-lg">No datas found</Text>
         </View>
@@ -148,7 +148,11 @@ const ZoneTransfer = ({ navigation, onPress }) => {
             >
               <TransferItem
                 status={
-                  item.state === "picker_pending" || item.state === "reassigned" ? "Pending" : "Completed"
+                  item.state === "picker_pending" || item.state === "reassigned"
+                    ? "Pending"
+                    : item.state === "checker_verified"
+                    ? "Verified"
+                    : "Completed"
                 }
                 fromZone={item.from}
                 fromColor="#2F80ED" // Adjust color dynamically if needed

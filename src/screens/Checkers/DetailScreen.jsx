@@ -13,7 +13,7 @@ const DetailScreen = ({ activeName, productLines }) => {
   const toast = useToast();
   const reassignSheetRef = useRef(null);
   const createBottomSheetRef = useRef(null);
-  const shownOrders = useRef(new Set());
+  const doneFlag = productLines.every((item) => item.state === "checker_verified")
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [errors, setErrors] = useState({
     qty: "",
@@ -117,58 +117,61 @@ const DetailScreen = ({ activeName, productLines }) => {
       <FlatList
         data={groupedProducts}
         keyExtractor={(item, index) => `group-${index}`}
-        renderItem={({ item }) => (
-          <View className="p-4 bg-white rounded-sm overflow-hidden">
-            {item.map((product, idx) => {
-              const shouldShowOrderNo = !shownOrders.current.has(
-                product.order_no
-              );
-              if (shouldShowOrderNo) {
-                shownOrders.current.add(product.order_no);
-              }
-
-              return (
-                <ProductDetails
-                  key={product.move_id}
-                  moveId={product.move_id}
-                  orderNo={shouldShowOrderNo ? product.order_no : null}
-                  productName={product.product_name
-                    ?.replace(/["\t]/g, "")
-                    .trim()}
-                  availableQty={product.on_hand_qty}
-                  expiryDate={product.expiry_date}
-                  fromZone={product.location_name}
-                  toZone={product.location_dest_name}
-                  fromColor="purple"
-                  toColor="red"
-                  uom={product.uom_name}
-                  pickerName={product.picker_name}
-                  qty={product.qty}
-                  status={
-                    product.state === "picker_done"
-                      ? "Pending"
-                      : product.state === "reassigned"
-                      ? "Reassigned"
-                      : "Done"
-                  }
-                  onPress={() => {
-                    setSelectedProduct({
-                      fromZone: product.location_name,
-                      toZone: product.location_dest_name,
-                      pickerName: product.picker_name,
-                      qty: product.qty?.toString(),
-                      moveId: product.move_id,
-                      batchNo: product.lot_name,
-                    });
-                    reassignSheetOpen();
-                  }}
-                  onStatusChange={updateProductStatus}
-                  type={"Checker"}
-                />
-              );
-            })}
-          </View>
-        )}
+        renderItem={({ item }) => {
+          const localShownOrders = new Set();
+          return (
+            <View className="p-4 bg-white rounded-sm overflow-hidden">
+              {item.map((product) => {
+                const shouldShowOrderNo = !localShownOrders.has(
+                  product.order_no
+                );
+                if (shouldShowOrderNo) {
+                  localShownOrders.add(product.order_no);
+                }
+                return (
+                  <ProductDetails
+                    key={product.move_id}
+                    moveId={product.move_id}
+                    orderNo={shouldShowOrderNo ? product.order_no : null}
+                    productName={product.product_name
+                      ?.replace(/["\t]/g, "")
+                      .trim()}
+                    availableQty={product.on_hand_qty}
+                    expiryDate={product.expiry_date}
+                    fromZone={product.location_name}
+                    toZone={product.location_dest_name}
+                    fromColor="purple"
+                    toColor="red"
+                    uom={product.uom_name}
+                    pickerName={product.picker_name}
+                    qty={product.qty}
+                    status={
+                      product.state === "picker_done"
+                        ? "Pending"
+                        : product.state === "reassigned"
+                        ? "Reassigned"
+                        : "Done"
+                    }
+                    onPress={() => {
+                      setSelectedProduct({
+                        fromZone: product.location_name,
+                        toZone: product.location_dest_name,
+                        pickerName: product.picker_name,
+                        qty: product.qty?.toString(),
+                        moveId: product.move_id,
+                        batchNo: product.lot_name,
+                      });
+                      reassignSheetOpen();
+                    }}
+                    onStatusChange={updateProductStatus}
+                    type={"Checker"}
+                    doneFlag={doneFlag}
+                  />
+                );
+              })}
+            </View>
+          );
+        }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
       />

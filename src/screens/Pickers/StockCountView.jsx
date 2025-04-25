@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import StockTable from "../../components/Table/StockTable";
 import { apiGet } from "../../utils/apiService";
+import { saveStockToStorage, getSavedStockValues } from "../../utils/common";
 import { debounce } from "lodash";
 
 const StockCountView = () => {
@@ -9,19 +10,28 @@ const StockCountView = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Debounced API call
   const fetchInvoices = useCallback(
     debounce(async () => {
       setLoading(true);
       try {
         const response = await apiGet("/picker/get_product_qty");
+        const savedStocks = await getSavedStockValues(); // 🔥 Load saved stock values
+
         if (response?.payload) {
-          const formattedData = response?.payload?.map((item) => [
-            item.product_name.trim(),
-            item.on_hand_qty.toString(),
-            item.available_qty.toString(),
-            item.available_qty.toString(),
-          ]);
+          const formattedData = response.payload.map((item) => {
+            const id = item.id.toString();
+            return [
+              item.product_name.trim(),
+              savedStocks[id] ?? "0", // use saved stock if exists
+              item.show_actual_qty.toString() === "true"
+                ? Math.abs(item.available_qty).toString()
+                : "",
+              item.show_actual_qty.toString() === "true"
+                ? (item.on_hand_qty - item.available_qty).toString()
+                : "",
+              id, // product id
+            ];
+          });
           setTableData(formattedData);
         } else {
           setTableData([]);
@@ -56,7 +66,7 @@ const StockCountView = () => {
           <Text className="text-red-500 text-lg">No data found</Text>
         </View>
       ) : (
-        <StockTable tableData={tableData} />
+        <StockTable tableData={tableData} fetchInvoices={fetchInvoices} saveStockToStorage={saveStockToStorage}/>
       )}
     </View>
   );
