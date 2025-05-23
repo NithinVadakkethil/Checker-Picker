@@ -4,24 +4,52 @@ import {
   ProductDetails,
   ReassignBottomSheet,
   CreateBottomSheet,
+  EditBottomSheet,
 } from "../../components";
 import Add from "../../assets/icons/Add.svg";
-import { checkerReAssign, checkerVerify } from "../../api/CommonService";
+import {
+  checkerReAssign,
+  checkerVerify,
+  updatecheckerDate,
+  checkerSaleOrderVerify,
+  checkerZoneTransferVerify,
+} from "../../api/CommonService";
 import { useToast } from "react-native-toast-notifications";
 
 const DetailScreen = ({ activeName, productLines }) => {
   const toast = useToast();
+  const editBottomSheetRef = useRef(null);
   const reassignSheetRef = useRef(null);
   const createBottomSheetRef = useRef(null);
-  const doneFlag = productLines.every((item) => item.state === "checker_verified")
+  const [selectedDates, setSelectedDates] = useState({});
+  const [activeMoveId, setActiveMoveId] = useState(null);
+  const [loadingMap, setLoadingMap] = useState({});
+  const [loading, setLoading] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [orderStaus, setOrderStaus] = useState(false);
   const [errors, setErrors] = useState({
     qty: "",
     reason: "",
   });
 
-  // Function to close the bottom sheet
+  const setLoadingForMoveId = (moveId, isLoading) => {
+    setLoadingMap((prev) => ({
+      ...prev,
+      [moveId]: isLoading,
+    }));
+  };
+
   const editSheetClose = () => {
+    editBottomSheetRef.current.close();
+  };
+
+  const editSheetOpen = (moveId) => {
+    setActiveMoveId(moveId);
+    editBottomSheetRef.current.open();
+  };
+
+  // Function to close the bottom sheet
+  const reassignSheetClose = () => {
     setErrors({ qty: "", reason: "" });
     reassignSheetRef.current.close();
   };
@@ -66,19 +94,55 @@ const DetailScreen = ({ activeName, productLines }) => {
 
     setErrors(newErrors);
     if (valid) {
-      const result = await checkerReAssign(moveId, reason, qty);
+      try {
+        setLoading(true)
+        const result = await checkerReAssign(moveId, reason, qty);
+        if (result?.success) {
+          setGroupedProducts((prevGroups) =>
+            prevGroups.map((group) =>
+              group.map((product) =>
+                product.move_id === moveId
+                  ? { ...product, state: "reassigned" }
+                  : product
+              )
+            )
+          );
+          reassignSheetClose();
+          toast.show("Reassigned successfully", {
+            type: "Success",
+            // placement: "top",
+          });
+        } else {
+          toast.show(result.message, {
+            type: "error",
+          });
+        }
+      } catch (error) {
+        toast.show(error, {
+          type: "error",
+        });
+      } finally {
+        setLoading(false)
+      }
+    }
+  };
+
+  const updateProductStatus = async (moveId) => {
+    try {
+      setLoadingForMoveId(moveId, true);
+      const result = await checkerVerify(moveId);
+      toast.hideAll();
       if (result?.success) {
         setGroupedProducts((prevGroups) =>
           prevGroups.map((group) =>
             group.map((product) =>
               product.move_id === moveId
-                ? { ...product, state: "reassigned" }
+                ? { ...product, state: "done" }
                 : product
             )
           )
         );
-        editSheetClose();
-        toast.show("Reassigned successfully", {
+        toast.show("Status updated successfully", {
           type: "Success",
           // placement: "top",
         });
@@ -87,12 +151,71 @@ const DetailScreen = ({ activeName, productLines }) => {
           type: "error",
         });
       }
+    } catch (error) {
+      toast.show(error, {
+        type: "error",
+      });
+    } finally {
+      setLoadingForMoveId(moveId, false);
     }
   };
 
-  const updateProductStatus = async (moveId) => {
-    const result = await checkerVerify(moveId);
-    toast.hideAll();
+  const onOrderStatusChange = async (saleId) => {
+    try {
+      setLoadingForMoveId(saleId, true);
+      const result =
+        activeName === "Zone Transfer"
+          ? await checkerZoneTransferVerify(saleId)
+          : await checkerSaleOrderVerify(saleId);
+      toast.hideAll();
+      if (result?.success) {
+        setOrderStaus(true);
+        // setGroupedProducts((prevGroups) =>
+        //   prevGroups.map((group) =>
+        //     group.map((product) =>
+        //       product.move_id === moveId ? { ...product, state: "done" } : product
+        //     )
+        //   )
+        // );
+        toast.show("Status updated successfully", {
+          type: "Success",
+          // placement: "top",
+        });
+      } else {
+        toast.show(result.message, {
+          type: "error",
+        });
+      }
+    } catch (error) {
+      toast.show(error, {
+        type: "error",
+      });
+    } finally {
+      setLoadingForMoveId(saleId, false);
+    }
+  };
+
+  const handleOnPress = (product) => {
+    if (activeName !== "Reciepts") {
+      setSelectedProduct({
+        fromZone: product.location_name,
+        toZone: product.location_dest_name,
+        pickerName: product.picker_name,
+        qty: product.qty?.toString(),
+        actualQty: product.qty?.toString(),
+        moveId: product.move_id,
+        batchNo: product.lot_name,
+      });
+      reassignSheetOpen();
+    } else {
+      editSheetOpen(product.move_id);
+    }
+  };
+
+  const checkerDateUpdate = async (moveId, date) => {
+    setLoadingForMoveId(moveId, true);
+    try {
+      const result = await updatecheckerDate(moveId, { date: date });
     if (result?.success) {
       setGroupedProducts((prevGroups) =>
         prevGroups.map((group) =>
@@ -101,7 +224,9 @@ const DetailScreen = ({ activeName, productLines }) => {
           )
         )
       );
-      toast.show("Status updated successfully", {
+      editSheetClose();
+      toast.hideAll();
+      toast.show("Date updated successfully", {
         type: "Success",
         // placement: "top",
       });
@@ -110,7 +235,20 @@ const DetailScreen = ({ activeName, productLines }) => {
         type: "error",
       });
     }
+    } catch (error) {
+      toast.show(error, {
+        type: "error",
+      });
+    } finally {
+      setLoadingForMoveId(moveId, false);
+    }
   };
+
+  const doneFlag = groupedProducts
+    .flat()
+    .every(
+      (item) => item.state === "done" || item.state === "checker_verified"
+    );
 
   return (
     <View className="flex-1 relative">
@@ -137,7 +275,7 @@ const DetailScreen = ({ activeName, productLines }) => {
                       ?.replace(/["\t]/g, "")
                       .trim()}
                     availableQty={product.on_hand_qty}
-                    expiryDate={product.expiry_date}
+                    expiryDate={product.lot_name}
                     fromZone={product.location_name}
                     toZone={product.location_dest_name}
                     fromColor="purple"
@@ -152,20 +290,20 @@ const DetailScreen = ({ activeName, productLines }) => {
                         ? "Reassigned"
                         : "Done"
                     }
-                    onPress={() => {
-                      setSelectedProduct({
-                        fromZone: product.location_name,
-                        toZone: product.location_dest_name,
-                        pickerName: product.picker_name,
-                        qty: product.qty?.toString(),
-                        moveId: product.move_id,
-                        batchNo: product.lot_name,
-                      });
-                      reassignSheetOpen();
-                    }}
+                    onPress={() => handleOnPress(product)}
                     onStatusChange={updateProductStatus}
                     type={"Checker"}
                     doneFlag={doneFlag}
+                    activeName={activeName}
+                    selectedDate={selectedDates[product.move_id] || null}
+                    saleId={
+                      activeName === "Zone Transfer"
+                        ? product.id
+                        : product.sale_id
+                    }
+                    onOrderStatusChange={onOrderStatusChange}
+                    orderStaus={orderStaus}
+                    loading={loadingMap[product.move_id] || false}
                   />
                 );
               })}
@@ -182,8 +320,9 @@ const DetailScreen = ({ activeName, productLines }) => {
       >
         <Add />
       </TouchableOpacity> */}
+
       <ReassignBottomSheet
-        onClose={editSheetClose}
+        onClose={reassignSheetClose}
         onOpen={reassignSheetOpen}
         bottomSheetRef={reassignSheetRef}
         selectedProduct={selectedProduct}
@@ -191,6 +330,21 @@ const DetailScreen = ({ activeName, productLines }) => {
         setSelectedProduct={setSelectedProduct}
         errors={errors}
         setErrors={setErrors}
+        loading={loading}
+      />
+      <EditBottomSheet
+        onClose={editSheetClose}
+        onOpen={editSheetOpen}
+        bottomSheetRef={editBottomSheetRef}
+        selectedDate={selectedDates[activeMoveId] || null}
+        setSelectedDate={(date) => {
+          setSelectedDates((prev) => ({
+            ...prev,
+            [activeMoveId]: date,
+          }));
+        }}
+        pickerDateUpdate={checkerDateUpdate}
+        activeMoveId={activeMoveId}
       />
       <CreateBottomSheet
         onClose={createSheetClose}

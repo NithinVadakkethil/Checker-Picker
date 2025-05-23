@@ -59,32 +59,39 @@ const SalesInvoice = ({ onPress }) => {
       acc[item.order_no].items.push(item);
       return acc;
     }, {});
-  
+
     const groupedArray = Object.values(grouped).map((group) => {
-      const hasPickerDone = group.items.some((item) => item.state === "picker_done");
-      const allReassigned = group.items.every((item) => item.state === "reassigned");
-  
-      let status = "Verified";
+      const hasPickerDone = group.items.some(
+        (item) => item.state === "picker_done"
+      );
+      const allReassigned = group.items.some(
+        (item) => item.state === "reassigned"
+      );
+      const allVerified = group.items.every(
+        (item) => item.state === "checker_verified"
+      );
+
+      let status = "";
       if (hasPickerDone) status = "Completed";
       else if (allReassigned) status = "Reassign";
-  
+      else if (allVerified) status = "Verified";
+
       return {
         ...group,
         status,
       };
     });
-  
+
     // Sort: Completed first, then Reassign, then In Progress
     return groupedArray.sort((a, b) => {
       const priority = {
         Completed: 0,
         Reassign: 1,
-        "Verified": 2,
+        Verified: 2,
       };
       return priority[a.status] - priority[b.status];
     });
   };
-  
 
   useEffect(() => {
     const fetchInvoices = async () => {
@@ -92,12 +99,18 @@ const SalesInvoice = ({ onPress }) => {
         const response = await apiGet("/checker/sale_all_tasks");
         if (response?.payload) {
           const transformedPayload = transformData(response.payload);
+          // const groupedData = groupByOrderNo(transformedPayload); // Group by order number
+          // const completedCount = groupedData.filter(
+          //   (group) => group.status === "Completed"
+          // ).length;
+          // updateListCount("checkerSaleInvoice", completedCount);
+          // setInvoices(groupedData);
           const groupedData = groupByOrderNo(transformedPayload); // Group by order number
-          const completedCount = groupedData.filter(
+          const completedOrders = groupedData.filter(
             (group) => group.status === "Completed"
-          ).length;
-          updateListCount("checkerSaleInvoice", completedCount);
-          setInvoices(groupedData);
+          );
+          updateListCount("checkerSaleInvoice", completedOrders.length);
+          setInvoices(completedOrders);
         } else {
           setInvoices([]);
         }

@@ -1,4 +1,10 @@
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import FormGroup from "./FormGroup";
 import CloseIcon from "../../assets/icons/Close.svg";
@@ -10,6 +16,7 @@ const ReAssignForm = ({
   setSelectedProduct,
   errors,
   setErrors,
+  loading,
 }) => {
   const [showCloseIcon, setShowCloseIcon] = useState(false);
 
@@ -20,6 +27,8 @@ const ReAssignForm = ({
 
     return () => clearTimeout(timer); // Cleanup on unmount
   }, []);
+
+  console.log("loading", loading);
   return (
     <>
       <View className="flex-row justify-between items-center mb-6">
@@ -67,8 +76,26 @@ const ReAssignForm = ({
           value={selectedProduct?.qty}
           keyboardType="numeric"
           onChangeText={(text) => {
-            setErrors((prev) => ({ ...prev, qty: "" }));
-            setSelectedProduct((prev) => ({ ...prev, qty: text }));
+            const numericValue = parseInt(text, 10);
+            const maxQty = parseInt(selectedProduct?.actualQty, 10); // assuming `actualQty` holds the real qty
+
+            if (!isNaN(numericValue)) {
+              if (numericValue <= maxQty) {
+                setSelectedProduct((prev) => ({ ...prev, qty: text }));
+                setErrors((prev) => ({ ...prev, qty: "" }));
+              } else {
+                setSelectedProduct((prev) => ({
+                  ...prev,
+                  qty: String(maxQty),
+                }));
+                setErrors((prev) => ({
+                  ...prev,
+                  qty: `Qty cannot be more than ${maxQty}`,
+                }));
+              }
+            } else {
+              setSelectedProduct((prev) => ({ ...prev, qty: "" }));
+            }
           }}
         />
         {errors.qty ? (
@@ -108,9 +135,14 @@ const ReAssignForm = ({
             parseInt(selectedProduct?.qty)
           )
         }
+        disabled={loading}
         className="bg-[#144D4D] py-3 rounded-md mt-4"
       >
-        <Text className="text-white text-center font-medium">Add</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#ffffff" />
+        ) : (
+          <Text className="text-white text-center font-medium">Add</Text>
+        )}
       </TouchableOpacity>
     </>
   );

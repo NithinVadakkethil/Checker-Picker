@@ -10,6 +10,7 @@ const ReassignBottomSheet = ({
   setSelectedProduct,
   errors,
   setErrors,
+  loading
 }) => {
   return (
     <View className="flex-1 items-center justify-center">
@@ -39,6 +40,7 @@ const ReassignBottomSheet = ({
           setSelectedProduct={setSelectedProduct}
           errors={errors}
           setErrors={setErrors}
+          loading={loading}
         />
       </RBSheet>
     </View>

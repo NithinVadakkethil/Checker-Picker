@@ -7,9 +7,11 @@ export const ListCountProvider = ({ children }) => {
     saleInvoice: 0,
     zoneTransfer: 0,
     scheduledDelivery: 0,
+    reciepts: 0,
     checkerSaleInvoice: 0,
     checkerZoneTransfer: 0,
-    checkerScheduledDelivery: 0
+    checkerScheduledDelivery: 0,
+    checkerReciepts: 0
   });
 
   const updateListCount = (screenKey, count) => {
@@ -20,7 +22,7 @@ export const ListCountProvider = ({ children }) => {
   };
 
   return (
-    <ListCountContext.Provider value={{ listCounts, updateListCount }}>
+    <ListCountContext.Provider value={{ listCounts, updateListCount, setListCounts }}>
       {children}
     </ListCountContext.Provider>
   );

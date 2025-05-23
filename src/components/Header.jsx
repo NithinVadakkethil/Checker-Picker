@@ -2,6 +2,7 @@ import { TouchableOpacity, View, ActivityIndicator } from "react-native";
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useToast } from "react-native-toast-notifications";
+import { useListCount } from "../context/ListCountContext";
 import Logo from "../assets/icons/logo.svg";
 import Logout from "../assets/icons/logout.svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,6 +12,7 @@ import CheckmarkAnim from "../assets/animations/checkmark.json"; // import your 
 const Header = () => {
   const navigation = useNavigation();
   const toast = useToast()
+  const { setListCounts } = useListCount();
   const [status, setStatus] = useState("idle"); // "idle" | "loading" | "success"
 
   const handleLogout = async () => {
@@ -21,6 +23,14 @@ const Header = () => {
       setTimeout(() => {
         setStatus("success");
         setTimeout(() => {
+          setListCounts({
+            saleInvoice: 0,
+            zoneTransfer: 0,
+            scheduledDelivery: 0,
+            checkerSaleInvoice: 0,
+            checkerZoneTransfer: 0,
+            checkerScheduledDelivery: 0
+          })
           navigation.replace("Login");
         }, 1000); // wait after checkmark before navigating
       }, 1000); // simulate API delay

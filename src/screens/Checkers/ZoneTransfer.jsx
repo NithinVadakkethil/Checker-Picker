@@ -31,7 +31,8 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         qty: product.qty,
         uom_name: product.uom_name,
         uom_id: product.uom_id,
-        state: product.state,
+        state:
+          product.state === "picker_pending" ? "picker_done" : product.state,
         reassign_reason: product.reassign_reason,
         lot_id: product.lot_id || "",
         lot_name: product.lot_name || "",
@@ -54,15 +55,22 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       acc[item.order_no].push(item);
       return acc;
     }, {});
-  
+
     const groupedArray = Object.keys(grouped).map((order_no) => {
       const items = grouped[order_no];
-      const hasPickerDone = items.some((item) => item.state === "picker_done");
-      const allReassigned = items.every((item) => item.state === "reassigned");
-  
-      let state = "Verified";
+      const hasPickerDone = items.some(
+        (item) =>
+          item.state === "picker_done" || item.state === "picker_pending"
+      );
+      const allReassigned = items.some((item) => item.state === "reassigned");
+      const allVerified = items.every(
+        (item) => item.state === "checker_verified"
+      );
+
+      let state = "";
       if (hasPickerDone) state = "Completed";
       else if (allReassigned) state = "Reassign";
+      else if (allVerified) status = "Verified";
 
       return {
         order_no,
@@ -72,30 +80,36 @@ const ZoneTransfer = ({ navigation, onPress }) => {
         fromZone: items[0].location_name,
       };
     });
-  
+
     // Sort: Completed first, then Reassign, then In Progress
     return groupedArray.sort((a, b) => {
       const priority = {
         Completed: 0,
         Reassign: 1,
-        "Verified": 2,
+        Verified: 2,
       };
       return priority[a.status] - priority[b.status];
     });
   };
-  
+
   useEffect(() => {
     const fetchTransfers = async () => {
       try {
         const response = await apiGet("/checker/zone_all_tasks");
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
+          // const groupedData = groupByOrderNo(transformedPayload);
+          // const completedCount = groupedData.filter(
+          //   (group) => group.state === "Completed"
+          // ).length;
+          // updateListCount("checkerZoneTransfer", completedCount);
+          // setTransfers(groupedData);
           const groupedData = groupByOrderNo(transformedPayload);
-          const completedCount = groupedData.filter(
-            (group) => group.state === "Completed"
-          ).length;
-          updateListCount("checkerZoneTransfer", completedCount);
-          setTransfers(groupedData);
+          const completedTransfers = groupedData.filter(
+            (group) => group.state === "Completed" || group.state === "Reassign"
+          );
+          updateListCount("checkerZoneTransfer", completedTransfers.length);
+          setTransfers(completedTransfers);
         } else {
           setTransfers([]);
         }
@@ -127,7 +141,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
-      )   : transfers.length < 1 ? (
+      ) : transfers.length < 1 ? (
         <View className="flex-1 justify-center items-center">
           <Text className="text-red-500 text-lg">No datas found</Text>
         </View>

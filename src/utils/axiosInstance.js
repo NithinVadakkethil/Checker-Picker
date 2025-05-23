@@ -1,5 +1,6 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
 
 const axiosInstance = axios.create({
   // baseURL: "https://fifi.zinfog.in",
@@ -10,8 +11,9 @@ const axiosInstance = axios.create({
 });
 
 // Function to get token from AsyncStorage
-const getToken = () => {
-  return AsyncStorage.getItem("token").then(token => token);
+const getToken = async () => {
+  const token = await AsyncStorage.getItem("token");
+  return token;
 };
 
 // 🚀 Request Interceptor: Add Authorization Token
@@ -36,7 +38,8 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       console.error("Unauthorized! Token might be expired.");
-      
+      const navigation = useNavigation();
+
       // 🔴 Remove token & log out the user
       await AsyncStorage.removeItem("token");
       await AsyncStorage.removeItem("refresh_token");

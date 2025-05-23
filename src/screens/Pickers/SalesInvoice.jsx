@@ -124,22 +124,31 @@ const SalesInvoice = ({ onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
-      ) : invoices.length < 1 ? (
+      ) : invoices.filter(
+        (item) =>
+          item.state === "picker_pending" || item.state === "reassigned"
+      ).length < 1 ? (
         <View className="flex-1 justify-center items-center">
           <Text className="text-red-500 text-lg">No datas found</Text>
         </View>
       ) : (
         <FlatList
-          data={invoices}
+          // data={invoices}
+          data={invoices.filter(
+            (item) =>
+              item.state === "picker_pending" || item.state === "reassigned"
+          )}
           keyExtractor={(item) => item.order_no} // Unique by order_no
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => onPress(5, "Sales Invoice", item.items)}
+              onPress={() => onPress(7, "Sales Invoice", item.items)}
             >
               <OrderStatusCard
                 status={
-                  item.state === "picker_pending" || item.state === "reassigned"
+                  item.state === "picker_pending"
                     ? "Pending"
+                    : item.state === "reassigned"
+                    ? "Reassigned"
                     : item.state === "checker_verified"
                     ? "Verified"
                     : "Completed"

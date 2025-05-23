@@ -1,20 +1,19 @@
 import {
   View,
-  Text,
   FlatList,
   TouchableOpacity,
+  Text,
   ActivityIndicator,
 } from "react-native";
-import React, { useRef, useState, useEffect } from "react";
-import { TransferItem, CreateBottomSheet } from "../../components";
+import React, { useState, useEffect, useRef } from "react";
+import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
 import { useListCount } from "../../context/ListCountContext";
-import Add from "../../assets/icons/Add.svg";
 
-const ZoneTransfer = ({ navigation, onPress }) => {
+const Reciepts = ({ onPress }) => {
   const createBottomSheetRef = useRef(null);
   const { updateListCount } = useListCount();
-  const [transferItems, setTransferItems] = useState([]);
+  const [reciepts, setReciepts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,7 +21,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
     if (!Array.isArray(orders)) return [];
 
     return orders.flatMap((order) =>
-      order.product_lines.map((product) => ({
+      order.product_lines?.map((product) => ({
         id: order.id,
         move_id: product.move_id,
         product_id: product.product_id,
@@ -56,59 +55,79 @@ const ZoneTransfer = ({ navigation, onPress }) => {
 
     return Object.keys(grouped).map((order_no) => {
       const items = grouped[order_no];
-      let state = "picker_done"; // default state
+      let state = "picker_done"; // default
 
-      if (items.some((item) => item.state === "picker_pending")) {
+      if (
+        items.some(
+          (item) =>
+            item.state === "picker_pending" || item.state === "reassigned"
+        )
+      ) {
         state = "picker_pending";
       } else if (items.every((item) => item.state === "picker_done")) {
         state = "picker_done";
       } else if (items.every((item) => item.state === "checker_verified")) {
         state = "checker_verified";
       } else {
-        state = items[0].state; // fallback
+        state = items[0].state; // fallback if needed
       }
 
       return {
         order_no,
         items,
         state,
-        from: items[0].location_name,
-        to: items[0].location_dest_name,
       };
     });
   };
 
   useEffect(() => {
-    const fetchTransferItems = async () => {
+    const fetchReciepts = async () => {
       try {
-        const response = await apiGet("/picker/zone_all_tasks");
+        const response = await apiGet("/picker/receipts_all_tasks");
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
+          //   const groupedData = groupByOrderNo(transformedPayload);
+          //   const pendingCount = groupedData.filter(
+          //     (item) =>
+          //       item.state === "picker_pending" || item.state === "reassigned"
+          //   ).length;
+          //   updateListCount("saleInvoice", pendingCount);
+          //   // Sort: pending ("picker_pending") first, then others
+          //   const sortedData = groupedData.sort((a, b) => {
+          //     const priority = {
+          //       picker_pending: 0,
+          //       reassigned: 1,
+          //       picker_done: 2,
+          //       checker_verified: 3,
+          //     };
+
+          //     return priority[a.state] - priority[b.state];
+          //   });
+
           const groupedData = groupByOrderNo(transformedPayload);
-          const pendingCount = groupedData.filter(
+
+          // Filter only pending or reassigned receipts
+          const filteredData = groupedData.filter(
             (item) =>
               item.state === "picker_pending" || item.state === "reassigned"
-          ).length;
-          updateListCount("zoneTransfer", pendingCount);
-          // Sort: pending ("picker_pending") first, then others
-          // const sortedData = groupedData.sort((a, b) => {
-          //   const priority = {
-          //     picker_pending: 0,
-          //     reassigned: 1,
-          //     picker_done: 2,
-          //     checker_verified: 3,
-          //   };
-
-          //   return priority[a.state] - priority[b.state];
-          // });
-
-          const pendingData = groupedData.filter(
-            (item) => item.state === "picker_pending" || item.state === "reassigned"
           );
 
-          setTransferItems(pendingData);
+          // Update count
+          const pendingCount = filteredData.length;
+          updateListCount("reciepts", pendingCount);
+
+          // You can optionally sort them if needed
+          const sortedData = filteredData.sort((a, b) => {
+            const priority = {
+              picker_pending: 0,
+              reassigned: 1,
+            };
+            return priority[a.state] - priority[b.state];
+          });
+
+          setReciepts(sortedData);
         } else {
-          setTransferItems([]);
+          setReciepts([]);
         }
       } catch (err) {
         setError(err.message || "An error occurred");
@@ -117,19 +136,11 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       }
     };
 
-    fetchTransferItems();
+    fetchReciepts();
   }, []);
 
-  const createSheetClose = () => {
-    createBottomSheetRef.current.close();
-  };
-
-  const createSheetOpen = () => {
-    createBottomSheetRef.current.open();
-  };
-
   return (
-    <View className="flex-1">
+    <View className="flex-1 relative">
       {loading || error ? (
         <View className="flex-1 justify-center items-center">
           {loading ? (
@@ -138,30 +149,29 @@ const ZoneTransfer = ({ navigation, onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
-      ) : transferItems.length < 1 ? (
+      ) : reciepts.length < 1 ? (
         <View className="flex-1 justify-center items-center">
           <Text className="text-red-500 text-lg">No datas found</Text>
         </View>
       ) : (
         <FlatList
-          data={transferItems}
-          keyExtractor={(item) => item.order_no}
+          data={reciepts}
+          keyExtractor={(item) => item.order_no} // Unique by order_no
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => onPress(7, "Zone Transfer", item.items)}
+              onPress={() => onPress(7, "Reciepts", item.items)}
             >
-              <TransferItem
+              <OrderStatusCard
                 status={
                   item.state === "picker_pending"
                     ? "Pending"
-                    : item.state === "reassigned" ? "Reassigned" : item.state === "checker_verified"
+                    : item.state === "reassigned"
+                    ? "Reassigned"
+                    : item.state === "checker_verified"
                     ? "Verified"
                     : "Completed"
                 }
-                fromZone={item.from}
-                fromColor="#2F80ED" // Adjust color dynamically if needed
-                toColor="#EB5B00"
-                toZone={item.to}
+                orderNumber={item.order_no}
               />
             </TouchableOpacity>
           )}
@@ -170,20 +180,19 @@ const ZoneTransfer = ({ navigation, onPress }) => {
           contentContainerStyle={{ paddingBottom: 30 }}
         />
       )}
-
       {/* <TouchableOpacity
-        onPress={createSheetOpen}
+        onPress={() => createBottomSheetRef.current.open()}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"
       >
         <Add />
       </TouchableOpacity> */}
       <CreateBottomSheet
-        onClose={createSheetClose}
-        onOpen={createSheetOpen}
+        onClose={() => createBottomSheetRef.current.close()}
+        onOpen={() => createBottomSheetRef.current.open()}
         bottomSheetRef={createBottomSheetRef}
       />
     </View>
   );
 };
 
-export default ZoneTransfer;
+export default Reciepts;

@@ -101,8 +101,6 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
               item.state === "picker_pending" || item.state === "reassigned"
           ).length;
           updateListCount("scheduledDelivery", pendingCount);
-          // Sort: pending ("picker_pending") first, then others
-          // Sort: pending ("picker_pending") first, then others
           const sortedData = groupedData.sort((a, b) => {
             const priority = {
               picker_pending: 0,
@@ -113,8 +111,12 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
 
             return priority[a.state] - priority[b.state];
           });
-
-          setDeliveries(sortedData);
+          // setDeliveries(sortedData);
+          const pendingOnly = sortedData.filter(
+            (item) =>
+              item.state === "picker_pending" || item.state === "reassigned"
+          );
+          setDeliveries(pendingOnly);
         } else {
           setDeliveries([]);
         }
@@ -156,12 +158,14 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
           keyExtractor={(item) => item.order_no} // Unique by order_no
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => onPress(5, "Scheduled Delivery", item.items)}
+              onPress={() => onPress(7, "Scheduled Delivery", item.items)}
             >
               <ScheduledDeliveryCard
                 status={
-                  item.state === "picker_pending" || item.state === "reassigned"
+                  item.state === "picker_pending"
                     ? "Pending"
+                    : item.state === "reassigned"
+                    ? "Reassigned"
                     : item.state === "checker_verified"
                     ? "Verified"
                     : "Completed"

@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -5,16 +6,15 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import React, { useRef, useState, useEffect } from "react";
-import { ScheduledDeliveryCard, CreateBottomSheet } from "../../components";
+import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
 import { useListCount } from "../../context/ListCountContext";
 import Add from "../../assets/icons/Add.svg";
 
-const ScheduledDelivery = ({ navigation, onPress }) => {
+const Reciepts = ({ onPress }) => {
   const createBottomSheetRef = useRef(null);
   const { updateListCount } = useListCount();
-  const [deliveries, setDeliveries] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,19 +43,9 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
           lot_name: product.lot_name,
           picker_id: picking.picker_id,
           picker_name: picking.picker_name,
-          scheduled_date: picking.scheduled_date,
-          scheduled_time: picking.scheduled_time,
         }))
       )
     );
-  };
-
-  const convertTo12HourFormat = (timeStr) => {
-    const [hour, minute] = timeStr.split(":");
-    const hourNum = parseInt(hour, 10);
-    const ampm = hourNum >= 12 ? "PM" : "AM";
-    const hour12 = hourNum % 12 || 12; // 0 => 12
-    return `${hour12}:${minute} ${ampm}`;
   };
 
   const groupByOrderNo = (data) => {
@@ -77,7 +67,6 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
       const allReassigned = group.items.some(
         (item) => item.state === "reassigned"
       );
-
       const allVerified = group.items.every(
         (item) => item.state === "checker_verified"
       );
@@ -90,13 +79,10 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
       return {
         ...group,
         status,
-        date: group.items[0].scheduled_date || "",
-        time: convertTo12HourFormat(group.items[0].scheduled_time || ""),
-        // Optional: add more metadata here like date/time if needed
       };
     });
 
-    // Sort to show Completed first
+    // Sort: Completed first, then Reassign, then In Progress
     return groupedArray.sort((a, b) => {
       const priority = {
         Completed: 0,
@@ -108,33 +94,25 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
   };
 
   useEffect(() => {
-    const fetchDeliveries = async () => {
+    const fetchInvoices = async () => {
       try {
-        const response = await apiGet("/checker/scheduled_delivery");
+        const response = await apiGet("/checker/receipts_all_tasks");
         if (response?.payload) {
-          // const transformedPayload = transformData(response.payload);
-          // const groupedData = groupByOrderNo(transformedPayload);
-          // const pendingCount = groupedData.filter(
-          //   (item) => item.status === "Completed"
-          // ).length;
-
-          // updateListCount("checkerScheduledDelivery", pendingCount);
-          // setDeliveries(groupedData);
           const transformedPayload = transformData(response.payload);
-          const groupedData = groupByOrderNo(transformedPayload);
-
-          // Filter only Completed status
-          const completedDeliveries = groupedData.filter(
-            (item) => item.status === "Completed" || item.status === "Reassign"
+          // const groupedData = groupByOrderNo(transformedPayload); // Group by order number
+          // const completedCount = groupedData.filter(
+          //   (group) => group.status === "Completed"
+          // ).length;
+          // updateListCount("checkerSaleInvoice", completedCount);
+          // setInvoices(groupedData);
+          const groupedData = groupByOrderNo(transformedPayload); // Group by order number
+          const completedOrders = groupedData.filter(
+            (group) => group.status === "Completed"
           );
-
-          updateListCount(
-            "checkerScheduledDelivery",
-            completedDeliveries.length
-          );
-          setDeliveries(completedDeliveries);
+          updateListCount("checkerReciepts", completedOrders.length);
+          setInvoices(completedOrders);
         } else {
-          setDeliveries([]);
+          setInvoices([]);
         }
       } catch (err) {
         setError(err.message || "An error occurred");
@@ -143,9 +121,10 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
       }
     };
 
-    fetchDeliveries();
+    fetchInvoices();
   }, []);
 
+  // Function to close the bottom sheet
   const createSheetClose = () => {
     createBottomSheetRef.current.close();
   };
@@ -164,32 +143,29 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
             <Text className="text-red-500 text-lg">{error}</Text>
           )}
         </View>
-      ) : deliveries?.length < 1 ? (
+      ) : invoices.length < 1 ? (
         <View className="flex-1 justify-center items-center">
           <Text className="text-red-500 text-lg">No datas found</Text>
         </View>
       ) : (
         <FlatList
-          data={deliveries}
+          data={invoices}
           keyExtractor={(item) => item.order_no}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => onPress(6, "Scheduled Delivery", item.items)}
+              onPress={() => onPress(6, "Reciepts", item.items)}
             >
-              <ScheduledDeliveryCard
+              <OrderStatusCard
                 status={item.status}
                 orderNumber={item.order_no}
-                date={item.date}
-                time={item.time}
               />
             </TouchableOpacity>
           )}
           showsVerticalScrollIndicator={false}
-          // keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 30 }}
         />
       )}
-
       {/* <TouchableOpacity
         onPress={createSheetOpen}
         className="absolute bottom-5 left-1/2 -translate-x-1/2"
@@ -205,4 +181,4 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
   );
 };
 
-export default ScheduledDelivery;
+export default Reciepts;

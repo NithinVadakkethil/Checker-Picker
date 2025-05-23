@@ -5,10 +5,11 @@ import {
   ScheduledDelivery,
   StockCountView,
   History,
+  Reciepts,
   CheckerSalesInvoice,
   CheckerZoneTransfer,
   CheckerScheduledDelivery,
-  CheckerStockCountView,
+  CheckerReciepts,
   CheckerHistory,
 } from "../screens";
 
@@ -41,6 +42,12 @@ export const usePickersTabData = () => {
     },
     {
       id: 5,
+      name: "Reciepts",
+      count: listCounts.reciepts,
+      component: Reciepts,
+    },
+    {
+      id: 6,
       name: "History",
       component: History,
     },
@@ -68,6 +75,12 @@ export const usecheckersTabData = () => {
       name: "Scheduled Delivery",
       count: listCounts.checkerScheduledDelivery,
       component: CheckerScheduledDelivery,
+    },
+    {
+      id: 4,
+      name: "Reciepts",
+      count: listCounts.checkerReciepts,
+      component: CheckerReciepts,
     },
   ];
 };
