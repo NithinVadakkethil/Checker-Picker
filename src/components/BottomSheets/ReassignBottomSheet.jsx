@@ -1,7 +1,10 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Dimensions, Platform } from "react-native";
 import RBSheet from "react-native-raw-bottom-sheet";
 import ReAssignForm from "../Form/ReAssignForm";
+
+const { height: screenHeight } = Dimensions.get("window");
+
 const ReassignBottomSheet = ({
   bottomSheetRef,
   onClose,
@@ -13,13 +16,12 @@ const ReassignBottomSheet = ({
   loading
 }) => {
   return (
-    <View className="flex-1 items-center justify-center">
-      {/* Bottom Sheet Component */}
+    <View className="flex-1">
       <RBSheet
-        ref={bottomSheetRef} // Attach the reference
-        height="100%" // Set the height of the bottom sheet
-        closeOnDragDown={true} // Allow closing by dragging down
-        animationType="slide" // Use slide animation
+        ref={bottomSheetRef}
+        height={650} // numeric height (e.g. 90% of screen height)
+        closeOnDragDown={true}
+        animationType="slide"
         closeOnPressMask={true}
         customModalProps={{
           statusBarTranslucent: true,
@@ -32,7 +34,6 @@ const ReassignBottomSheet = ({
           },
         }}
       >
-        {/* Pass the onClose function to EditForm */}
         <ReAssignForm
           onClose={onClose}
           selectedProduct={selectedProduct}

@@ -55,17 +55,15 @@ const History = () => {
     const result = [];
 
     data?.forEach((item) => {
-      item.products.forEach((product) => {
+      if (item.state === "checker_verified") {
         result.push({
-          ...item,
-          product_initials: generateInitials(product),
-          product_name: product.replace(/["\t]/g, "").trim(), // add one product at a time
+          orderNumber: item.order_no,
+          type: item.type,
+          date: item.date,
         });
-      });
+      }
     });
-
     return {
-      ...data,
       payload: result,
     };
   };
@@ -111,6 +109,7 @@ const History = () => {
     fetchHistory();
   }, []);
 
+  console.log("history--->", history);
   return (
     <View className="flex-1">
       <View className="flex-row justify-between items-center mb-4">
@@ -146,7 +145,7 @@ const History = () => {
               key={item.id}
               initials={item.type}
               type={item.type}
-              orderNo={item.order_no}
+              orderNo={item.orderNumber}
               time={getTimeAgo(item?.date)}
             />
           )}

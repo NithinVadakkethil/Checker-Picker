@@ -40,7 +40,7 @@ const Reciepts = ({ onPress }) => {
           state: product.state,
           reassign_reason: product.reassign_reason,
           lot_id: product.lot_id,
-          lot_name: product.lot_name,
+          lot_name: product.lot_name || "Not added",
           picker_id: picking.picker_id,
           picker_name: picking.picker_name,
         }))

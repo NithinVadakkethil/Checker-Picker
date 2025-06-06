@@ -35,8 +35,8 @@ const ProductDetails = ({
   onOrderStatusChange,
   orderStaus,
   loading,
+  batchNumber,
 }) => {
-  console.log(activeName);
   const ReAsgnBadge = () => {
     return (
       <View className="flex items-center bg-re-badge rounded-full py-0.5 px-2">
@@ -47,7 +47,7 @@ const ProductDetails = ({
 
   return (
     <View className="flex-1">
-      <View className="flex-row justify-between items-center border-b border-[#CBCBCB]/30">
+      <View className={`flex-row justify-between items-center border-b border-[#CBCBCB]/30 ${!orderNo && 'pb-4'}`}>
         {orderNo && (
           <>
             <OrderHeader orderNo={orderNo} />
@@ -153,17 +153,39 @@ const ProductDetails = ({
           )}
         </View>
       )}
-      {type === "Checker" && (
+      {type === "Checker" && activeName !== "Reciepts" && (
         <View className="flex-row justify-between pt-1">
           <LabelInfo label={"Picker"} value={pickerName} />
+          {/* <LabelInfo label={"Expiry Date"} value={batchNumber} /> */}
+          <View className="flex-row items-center ">
+            <Text className="text-xs text-[#4D4D4D] font-normal">Expiry Date: </Text>
+            <Text className="text-[#000] font-semibold text-sm">{batchNumber}</Text>
+          </View>
         </View>
       )}
       <View className="flex-row justify-between py-2">
         {activeName !== "Reciepts" ? (
-          <LabelInfo label={"Available Qty"} value={availableQty} />
+          <View className="flex-col gap-2">
+            {/* <LabelInfo label={"Available Qty"} value={availableQty} /> */}
+            <View className="flex-row items-center ">
+                <Text className="text-xs text-[#4D4D4D] font-normal">Available Qty: </Text>
+                <Text className="text-[#000] font-semibold text-sm">
+                  {availableQty}
+                </Text>
+              </View>
+            {type !== "Checker" && (
+              // <LabelInfo label={"Expiry Date"} value={batchNumber} />
+              <View className="flex-row items-center ">
+                <Text className="font-normal text-xs mr-1">Expiry Date:</Text>
+                <Text className="text-[#000] font-semibold text-sm">
+                  {batchNumber}
+                </Text>
+              </View>
+            )}
+          </View>
         ) : (
           <View className="flex-row items-center">
-            <LabelInfo label={"Expiry Date"} value={expiryDate} />
+            <LabelInfo label={"Expiry Date"} />
             {status === "Done" ? (
               <Text>Updated</Text>
             ) : (
@@ -190,7 +212,7 @@ const ProductDetails = ({
           </Text>
         )}
       </View>
-      <View className="flex-row justify-between items-center">
+      {/* <View className="flex-row justify-between items-center">
         {activeName !== "Reciepts" ? (
           <LabelInfo label={"Batch No"} value={expiryDate} />
         ) : (
@@ -204,7 +226,25 @@ const ProductDetails = ({
         ) : (
           <LabelInfo label={"Batch No"} value={expiryDate} />
         )}
+      </View> */}
+
+      <View className="flex-row justify-between items-center flex-wrap">
+        {activeName !== "Reciepts" ? (
+          <LabelInfo label={"Batch No"} value={expiryDate} />
+        ) : (
+          <LabelInfo label={"Picker"} value={pickerName} />
+        )}
+
+        {activeName !== "Reciepts" ? (
+          <View className="flex-row items-center ">
+            <Text className="text-xs text-[#4D4D4D] font-normal">Qty: </Text>
+            <Text className="text-[#000] font-semibold text-sm">{qty}</Text>
+          </View>
+        ) : (
+          <LabelInfo label={"Batch No"} value={expiryDate} />
+        )}
       </View>
+
       <View className={`flex-row justify-between items-end`}>
         <ZoneLabel prefix={"From"} zone={fromZone} color={fromColor} />
         <Seperation height={20} width={20} />

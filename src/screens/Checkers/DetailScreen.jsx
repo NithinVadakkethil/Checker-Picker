@@ -55,8 +55,14 @@ const DetailScreen = ({ activeName, productLines }) => {
   };
 
   const reassignSheetOpen = () => {
-    reassignSheetRef.current.open();
+    if (reassignSheetRef.current) {
+      reassignSheetRef.current.close();
+      setTimeout(() => {
+        reassignSheetRef.current.open();
+      }, 300); // gives time to unmount/settle before reopening
+    }
   };
+  
   const createSheetClose = () => {
     createBottomSheetRef.current.close();
   };
@@ -276,6 +282,7 @@ const DetailScreen = ({ activeName, productLines }) => {
                       .trim()}
                     availableQty={product.on_hand_qty}
                     expiryDate={product.lot_name}
+                    batchNumber={product.expiry_date}
                     fromZone={product.location_name}
                     toZone={product.location_dest_name}
                     fromColor="purple"

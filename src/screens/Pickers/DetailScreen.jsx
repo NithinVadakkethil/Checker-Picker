@@ -125,7 +125,7 @@ const DetailScreen = ({ activeName, productLines }) => {
   };
 
   const displayedOrderNos = new Set();
-
+  
   return (
     <View className="flex-1 relative">
       <FlatList
@@ -153,6 +153,7 @@ const DetailScreen = ({ activeName, productLines }) => {
                       .trim()}
                     availableQty={product.on_hand_qty}
                     expiryDate={product.lot_name}
+                    batchNumber={product.expiry_date}
                     fromZone={product.location_name}
                     toZone={product.location_dest_name}
                     fromColor="purple"
