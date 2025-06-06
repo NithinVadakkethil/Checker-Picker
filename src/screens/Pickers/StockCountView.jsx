@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import StockTable from "../../components/Table/StockTable";
 import { apiGet } from "../../utils/apiService";
 import { updateCurrentStock } from "../../api/CommonService";
@@ -11,6 +12,54 @@ const StockCountView = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // AsyncStorage keys
+  const STOCK_STORAGE_KEY = 'current_stock_data';
+
+  // Load stored stock data from AsyncStorage
+  const loadStoredStockData = async () => {
+    try {
+      const storedData = await AsyncStorage.getItem(STOCK_STORAGE_KEY);
+      return storedData ? JSON.parse(storedData) : {};
+    } catch (error) {
+      console.error('Error loading stored stock data:', error);
+      return {};
+    }
+  };
+
+  // Save stock data to AsyncStorage
+  const saveStockData = async (productId, quantity) => {
+    try {
+      const existingData = await loadStoredStockData();
+      const updatedData = {
+        ...existingData,
+        [productId]: quantity
+      };
+      await AsyncStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify(updatedData));
+    } catch (error) {
+      console.error('Error saving stock data:', error);
+    }
+  };
+
+  // Clear specific product from AsyncStorage
+  const clearProductStock = async (productId) => {
+    try {
+      const existingData = await loadStoredStockData();
+      delete existingData[productId];
+      await AsyncStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify(existingData));
+    } catch (error) {
+      console.error('Error clearing product stock:', error);
+    }
+  };
+
+  // Clear all stored stock data (optional - for reset functionality)
+  const clearAllStoredStock = async () => {
+    try {
+      await AsyncStorage.removeItem(STOCK_STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing all stock data:', error);
+    }
+  };
+
   const fetchStockData = async () => {
     setLoading(true);
     setError(null);
@@ -19,12 +68,18 @@ const StockCountView = () => {
       const response = await apiGet("/picker/get_product_qty");
       
       if (response.statusOk && response.payload) {
+        // Load stored stock data
+        const storedStockData = await loadStoredStockData();
+        
         // Transform API data to table format
         const transformedData = response.payload.map(item => ({
           id: item.id,
           product_id: item.product_id,
           product_name: item.product_name,
-          current_stock: 0, // Initially zero as requested
+          // Use stored quantity if available, otherwise use 0
+          current_stock: storedStockData[item.product_id] !== undefined 
+            ? storedStockData[item.product_id] 
+            : 0,
           actual_field: item.show_actual_qty ? item.available_qty : null,
           balance: item.show_actual_qty ? (item.on_hand_qty - item.available_qty) : null,
           show_actual_qty: item.show_actual_qty,
@@ -50,19 +105,22 @@ const StockCountView = () => {
       if (result.success) {
         console.log('Quantity updated successfully:', result.message);
         toast.show("Stock updated", {
-          type: "Success", // Changed from "Success" to "success"
+          type: "Success",
         });
+        
+        // Save to AsyncStorage
+        await saveStockData(productId, newQuantity);
+        
         // Update local state
-        setTableData(prevData => 
-          prevData.map(item => 
-            item.product_id === productId 
+        setTableData(prevData =>
+          prevData.map(item =>
+            item.product_id === productId
               ? { ...item, current_stock: newQuantity }
               : item
           )
         );
       } else {
         console.error('Failed to update quantity:', result.message);
-        // You might want to show an error message to the user here
         toast.show(result.message, {
           type: "error",
         });
@@ -71,6 +129,9 @@ const StockCountView = () => {
     } catch (err) {
       console.error('Error updating quantity:', err);
       setError('Failed to update quantity');
+      toast.show('Failed to update quantity', {
+        type: "error",
+      });
     }
   };
 
@@ -94,7 +155,7 @@ const StockCountView = () => {
         </View>
       ) : (
         <StockTable 
-          tableData={tableData} 
+          tableData={tableData}
           onUpdateQuantity={updateQuantity}
         />
       )}
