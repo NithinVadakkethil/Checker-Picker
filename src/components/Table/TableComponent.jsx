@@ -42,8 +42,8 @@ const TableComponent = ({
         className={`text-left text-sm text-black ${
           showActualQty ? "flex-[2]" : "flex-[3]"
         }`}
-        numberOfLines={1}
-        ellipsizeMode="tail"
+        // numberOfLines={1}
+        // ellipsizeMode="tail"
       >
         {item.product_name}
       </Text>
@@ -51,7 +51,7 @@ const TableComponent = ({
       {/* Current Stock - Editable */}
       <View className="flex-[1]">
         <TextInput
-          className="flex-[1] text-sm text-black text-center pb-2 border border-gray-200 rounded mx-1"
+          className="flex-[1] text-sm text-black text-center pb-2 rounded mx-1"
           keyboardType="numeric"
           defaultValue={item.current_stock.toString()}
           placeholder="0"

@@ -7,11 +7,9 @@ import {
   ActivityIndicator,
   Image,
   Dimensions,
-  KeyboardAvoidingView,
-  ScrollView,
-  Platform,
   Keyboard,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useNavigation } from "@react-navigation/native";
 import Logo from "../assets/icons/LoginLogo.svg";
 import EyeOpen from "../assets/icons/eyeopen.svg";
@@ -78,17 +76,17 @@ const Login = () => {
   };
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       className="flex-1"
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      contentContainerStyle={{ flexGrow: 1 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      enableOnAndroid={true}
+      enableAutomaticScroll={true}
+      extraScrollHeight={20}
+      extraHeight={100}
     >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View className="flex-1 relative bg-white items-center justify-center px-8 w-full min-h-full">
+      <View className="flex-1 relative bg-white items-center justify-center px-8 w-full min-h-full">
           <Image
             source={gradient}
             style={{
@@ -149,8 +147,7 @@ const Login = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollView>
   );
 };
 
