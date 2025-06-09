@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import StockTable from "../../components/Table/StockTable";
 import { apiGet } from "../../utils/apiService";
 import { updateCurrentStock } from "../../api/CommonService";
@@ -13,7 +13,7 @@ const StockCountView = () => {
   const [error, setError] = useState(null);
 
   // AsyncStorage keys
-  const STOCK_STORAGE_KEY = 'current_stock_data';
+  const STOCK_STORAGE_KEY = "current_stock_data";
 
   // Load stored stock data from AsyncStorage
   const loadStoredStockData = async () => {
@@ -21,7 +21,7 @@ const StockCountView = () => {
       const storedData = await AsyncStorage.getItem(STOCK_STORAGE_KEY);
       return storedData ? JSON.parse(storedData) : {};
     } catch (error) {
-      console.error('Error loading stored stock data:', error);
+      console.error("Error loading stored stock data:", error);
       return {};
     }
   };
@@ -32,11 +32,14 @@ const StockCountView = () => {
       const existingData = await loadStoredStockData();
       const updatedData = {
         ...existingData,
-        [productId]: quantity
+        [productId]: quantity,
       };
-      await AsyncStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify(updatedData));
+      await AsyncStorage.setItem(
+        STOCK_STORAGE_KEY,
+        JSON.stringify(updatedData)
+      );
     } catch (error) {
-      console.error('Error saving stock data:', error);
+      console.error("Error saving stock data:", error);
     }
   };
 
@@ -45,9 +48,12 @@ const StockCountView = () => {
     try {
       const existingData = await loadStoredStockData();
       delete existingData[productId];
-      await AsyncStorage.setItem(STOCK_STORAGE_KEY, JSON.stringify(existingData));
+      await AsyncStorage.setItem(
+        STOCK_STORAGE_KEY,
+        JSON.stringify(existingData)
+      );
     } catch (error) {
-      console.error('Error clearing product stock:', error);
+      console.error("Error clearing product stock:", error);
     }
   };
 
@@ -56,37 +62,40 @@ const StockCountView = () => {
     try {
       await AsyncStorage.removeItem(STOCK_STORAGE_KEY);
     } catch (error) {
-      console.error('Error clearing all stock data:', error);
+      console.error("Error clearing all stock data:", error);
     }
   };
 
   const fetchStockData = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiGet("/picker/get_product_qty");
-      
+
       if (response.statusOk && response.payload) {
         // Load stored stock data
         const storedStockData = await loadStoredStockData();
-        
+
         // Transform API data to table format
-        const transformedData = response.payload.map(item => ({
+        const transformedData = response.payload.map((item) => ({
           id: item.id,
           product_id: item.product_id,
           product_name: item.product_name,
           // Use stored quantity if available, otherwise use 0
-          current_stock: storedStockData[item.product_id] !== undefined 
-            ? storedStockData[item.product_id] 
-            : 0,
+          current_stock:
+            storedStockData[item.product_id] !== undefined
+              ? storedStockData[item.product_id]
+              : 0,
           actual_field: item.show_actual_qty ? item.available_qty : null,
-          balance: item.show_actual_qty ? (item.on_hand_qty - item.available_qty) : null,
+          balance: item.show_actual_qty
+            ? item.on_hand_qty - item.available_qty
+            : null,
           show_actual_qty: item.show_actual_qty,
           on_hand_qty: item.on_hand_qty,
-          available_qty: item.available_qty
+          available_qty: item.available_qty,
         }));
-        
+
         setTableData(transformedData);
       } else {
         setError("Failed to fetch data");
@@ -101,35 +110,34 @@ const StockCountView = () => {
   const updateQuantity = async (productId, newQuantity) => {
     try {
       const result = await updateCurrentStock(productId, newQuantity);
-      
+
       if (result.success) {
-        console.log('Quantity updated successfully:', result.message);
+        console.log("Quantity updated successfully:", result.message);
         toast.show("Stock updated", {
           type: "Success",
         });
-        
+
         // Save to AsyncStorage
         await saveStockData(productId, newQuantity);
-        
+
         // Update local state
-        setTableData(prevData =>
-          prevData.map(item =>
+        setTableData((prevData) =>
+          prevData.map((item) =>
             item.product_id === productId
               ? { ...item, current_stock: newQuantity }
               : item
           )
         );
       } else {
-        console.error('Failed to update quantity:', result.message);
+        console.error("Failed to update quantity:", result.message);
         toast.show(result.message, {
           type: "error",
         });
       }
-      
     } catch (err) {
-      console.error('Error updating quantity:', err);
-      setError('Failed to update quantity');
-      toast.show('Failed to update quantity', {
+      console.error("Error updating quantity:", err);
+      setError("Failed to update quantity");
+      toast.show("Failed to update quantity", {
         type: "error",
       });
     }
@@ -154,10 +162,7 @@ const StockCountView = () => {
           <Text className="text-red-500 text-lg">No data found</Text>
         </View>
       ) : (
-        <StockTable 
-          tableData={tableData}
-          onUpdateQuantity={updateQuantity}
-        />
+        <StockTable tableData={tableData} onUpdateQuantity={updateQuantity} />
       )}
     </View>
   );

@@ -7,6 +7,10 @@ import {
   ActivityIndicator,
   Image,
   Dimensions,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  Keyboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import Logo from "../assets/icons/LoginLogo.svg";
@@ -39,6 +43,9 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
+    // Dismiss the keyboard first
+    Keyboard.dismiss();
+    
     toast.hideAll();
     if (!credentials?.username.trim() || !credentials?.password.trim()) {
       toast.show("Username and Password are required!", {
@@ -71,63 +78,79 @@ const Login = () => {
   };
 
   return (
-    <View className="flex-1 relative bg-white items-center justify-center px-8 w-full">
-      <Image
-        source={gradient}
-        style={{
-          height: height,
-          width: width,
-          resizeMode: "cover",
-          position: "absolute",
-        }}
-      />
-      <Logo width={170} height={150} />
-      <View className="w-full pt-10">
-        <Text className="text-sm font-bold text-black mb-1">Username</Text>
-        <TextInput
-          className="w-full bg-gray-100 p-3 rounded-sm text-gray-500"
-          placeholder="Username"
-          placeholderTextColor="#aaa"
-          value={credentials.username} // Controlled input
-          onChangeText={(text) => handleChange("username", text)}
-        />
-
-        <Text className="text-sm font-bold text-black mt-5 mb-1">Password</Text>
-        <View className="relative">
-          <TextInput
-            className="w-full bg-gray-100 p-3 rounded-sm text-gray-500 pr-10"
-            placeholder="Password"
-            placeholderTextColor="#aaa"
-            secureTextEntry={!isPasswordVisible}
-            value={credentials.password}
-            onChangeText={(text) => handleChange("password", text)}
+    <KeyboardAvoidingView
+      className="flex-1"
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="flex-1 relative bg-white items-center justify-center px-8 w-full min-h-full">
+          <Image
+            source={gradient}
+            style={{
+              height: height,
+              width: width,
+              resizeMode: "cover",
+              position: "absolute",
+            }}
           />
-          <TouchableOpacity
-            onPress={togglePasswordVisibility}
-            className="absolute right-3 top-3"
-          >
-            {isPasswordVisible ? (
-              <EyeClose width={16} height={16} />
-            ) : (
-              <EyeOpen width={16} height={16} />
-            )}
-          </TouchableOpacity>
-        </View>
+          <Logo width={170} height={150} />
+          <View className="w-full pt-10">
+            <Text className="text-sm font-bold text-black mb-1">Username</Text>
+            <TextInput
+              className="w-full bg-gray-100 p-3 rounded-sm text-gray-500"
+              placeholder="Username"
+              placeholderTextColor="#aaa"
+              value={credentials.username}
+              onChangeText={(text) => handleChange("username", text)}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
 
-        {/* Login Button */}
-        <TouchableOpacity
-          className="w-full bg-teal-900 p-3 rounded-md mt-10"
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text className="text-white text-center text-lg">Login</Text>
-          )}
-        </TouchableOpacity>
-      </View>
-    </View>
+            <Text className="text-sm font-bold text-black mt-5 mb-1">Password</Text>
+            <View className="relative">
+              <TextInput
+                className="w-full bg-gray-100 p-3 rounded-sm text-gray-500 pr-10"
+                placeholder="Password"
+                placeholderTextColor="#aaa"
+                secureTextEntry={!isPasswordVisible}
+                value={credentials.password}
+                onChangeText={(text) => handleChange("password", text)}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              <TouchableOpacity
+                onPress={togglePasswordVisibility}
+                className="absolute right-3 top-3"
+              >
+                {isPasswordVisible ? (
+                  <EyeClose width={16} height={16} />
+                ) : (
+                  <EyeOpen width={16} height={16} />
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Login Button */}
+            <TouchableOpacity
+              className="w-full bg-teal-900 p-3 rounded-md mt-10"
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text className="text-white text-center text-lg">Login</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

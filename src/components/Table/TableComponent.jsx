@@ -1,7 +1,18 @@
 import React, { useRef } from "react";
-import { FlatList, View, TextInput, Text, Keyboard } from "react-native";
+import {
+  FlatList,
+  View,
+  TextInput,
+  Text,
+  Keyboard,
+} from "react-native";
 
-const TableComponent = ({ tableHead, tableData, onUpdateQuantity, showActualQty }) => {
+const TableComponent = ({
+  tableHead,
+  tableData,
+  onUpdateQuantity,
+  showActualQty,
+}) => {
   const flatListRef = useRef(null);
 
   const handleQuantitySubmit = (productId, value, index) => {
@@ -21,20 +32,16 @@ const TableComponent = ({ tableHead, tableData, onUpdateQuantity, showActualQty 
     }
   };
 
-  const getItemLayout = (data, index) => ({
-    length: 40, // Height of each row (h-10 = 40px)
-    offset: 40 * index,
-    index,
-  });
-
   const renderItem = ({ item, index }) => (
     <View
       key={index}
       className="flex-row h-10 items-center border-b border-gray-300 px-2"
     >
       {/* Product Name */}
-      <Text 
-        className={`text-left text-sm text-black ${showActualQty ? 'flex-[2]' : 'flex-[3]'}`}
+      <Text
+        className={`text-left text-sm text-black ${
+          showActualQty ? "flex-[2]" : "flex-[3]"
+        }`}
         numberOfLines={1}
         ellipsizeMode="tail"
       >
@@ -49,7 +56,7 @@ const TableComponent = ({ tableHead, tableData, onUpdateQuantity, showActualQty 
           defaultValue={item.current_stock.toString()}
           placeholder="0"
           onFocus={() => handleFocus(index)}
-          onSubmitEditing={(e) => 
+          onSubmitEditing={(e) =>
             handleQuantitySubmit(item.product_id, e.nativeEvent.text, index)
           }
           returnKeyType="done"
@@ -60,14 +67,14 @@ const TableComponent = ({ tableHead, tableData, onUpdateQuantity, showActualQty 
       {/* Actual Field - Only show if showActualQty is true */}
       {showActualQty && (
         <Text className="flex-[1] text-center text-sm text-black">
-          {item.show_actual_qty ? (item.actual_field || 0) : '-'}
+          {item.show_actual_qty ? item.actual_field || 0 : "-"}
         </Text>
       )}
 
       {/* Balance - Only show if showActualQty is true */}
       {showActualQty && (
         <Text className="flex-[1] text-center text-sm text-black">
-          {item.show_actual_qty ? (item.balance || 0) : '-'}
+          {item.show_actual_qty ? item.balance || 0 : "-"}
         </Text>
       )}
     </View>
@@ -78,8 +85,10 @@ const TableComponent = ({ tableHead, tableData, onUpdateQuantity, showActualQty 
       {/* Table Header */}
       <View className="bg-gray-100 px-2 py-2 border-b border-gray-300">
         <View className="flex-row">
-          <Text 
-            className={`text-left font-semibold text-black text-sm ${showActualQty ? 'flex-[2]' : 'flex-[3]'}`}
+          <Text
+            className={`text-left font-semibold text-black text-sm ${
+              showActualQty ? "flex-[2]" : "flex-[3]"
+            }`}
           >
             {tableHead[0]}
           </Text>
@@ -101,26 +110,11 @@ const TableComponent = ({ tableHead, tableData, onUpdateQuantity, showActualQty 
 
       {/* Table Body */}
       <FlatList
+        removeClippedSubviews={false}
         ref={flatListRef}
         data={tableData}
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item.product_id}_${item.id}_${index}`}
-        // getItemLayout={getItemLayout}
-        // onScrollToIndexFailed={(info) => {
-        //   // Handle case where scrollToIndex fails
-        //   const wait = new Promise(resolve => setTimeout(resolve, 500));
-        //   wait.then(() => {
-        //     flatListRef.current?.scrollToIndex({
-        //       index: info.index,
-        //       animated: true,
-        //       viewPosition: 0.5,
-        //     });
-        //   });
-        // }}
-        // initialNumToRender={20}
-        // maxToRenderPerBatch={50}
-        // windowSize={10}
-        // removeClippedSubviews={true}
       />
     </View>
   );
