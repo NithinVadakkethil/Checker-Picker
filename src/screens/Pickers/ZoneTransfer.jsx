@@ -58,7 +58,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       const items = grouped[order_no];
       let state = "picker_done"; // default state
 
-      if (items.some((item) => item.state === "picker_pending")) {
+      if (items.some((item) => item.state === "picker_pending") || items.some((item) => item.state === "reassigned")) {
         state = "picker_pending";
       } else if (items.every((item) => item.state === "picker_done")) {
         state = "picker_done";

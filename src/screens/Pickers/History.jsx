@@ -55,7 +55,7 @@ const History = () => {
     const result = [];
 
     data?.forEach((item) => {
-      if (item.state === "checker_verified") {
+      if (item.state === "done") {
         result.push({
           orderNumber: item.order_no,
           type: item.type,

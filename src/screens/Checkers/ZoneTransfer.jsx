@@ -24,6 +24,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
     return orders.flatMap((order) =>
       order.product_lines?.map((product) => ({
         id: order.id,
+        universalDone: order.state,
         move_id: product.move_id,
         product_id: product.product_id,
         product_name: product.product_name.trim(),
@@ -70,7 +71,7 @@ const ZoneTransfer = ({ navigation, onPress }) => {
       let state = "";
       if (hasPickerDone) state = "Completed";
       else if (allReassigned) state = "Reassign";
-      else if (allVerified) status = "Verified";
+      else if (allVerified) state = "Verified";
 
       return {
         order_no,
@@ -105,8 +106,14 @@ const ZoneTransfer = ({ navigation, onPress }) => {
           // updateListCount("checkerZoneTransfer", completedCount);
           // setTransfers(groupedData);
           const groupedData = groupByOrderNo(transformedPayload);
+          // const completedTransfers = groupedData.filter(
+          //   (group) => group.state === "Completed" || group.state === "Reassign"
+          // );
           const completedTransfers = groupedData.filter(
-            (group) => group.state === "Completed" || group.state === "Reassign"
+            (group) =>
+              group.state !== "Reassign" &&
+              (group.state === "Completed" ||
+                group.items.some((item) => item.universalDone !== "done"))
           );
           updateListCount("checkerZoneTransfer", completedTransfers.length);
           setTransfers(completedTransfers);

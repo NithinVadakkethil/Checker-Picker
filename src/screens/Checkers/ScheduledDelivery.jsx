@@ -24,6 +24,7 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
         picking.product_lines.map((product) => ({
           sale_id: sale.sale_id,
           id: picking.id,
+          universalDone: sale.state,
           order_no: picking.order_no,
           location_id: picking.location_id,
           location_name: picking.location_name,
@@ -124,9 +125,15 @@ const ScheduledDelivery = ({ navigation, onPress }) => {
           const groupedData = groupByOrderNo(transformedPayload);
 
           // Filter only Completed status
+          // const completedDeliveries = groupedData.filter(
+          //   (item) => item.status === "Completed" || item.status === "Reassign"
+          // );
           const completedDeliveries = groupedData.filter(
-            (item) => item.status === "Completed" || item.status === "Reassign"
+            (group) =>
+              group.status !== "Reassign" &&
+              (group.status === "Completed" || group.items.some(item => item.universalDone !== "done"))
           );
+          
 
           updateListCount(
             "checkerScheduledDelivery",

@@ -78,23 +78,46 @@ const StockCountView = () => {
         const storedStockData = await loadStoredStockData();
 
         // Transform API data to table format
-        const transformedData = response.payload.map((item) => ({
-          id: item.id,
-          product_id: item.product_id,
-          product_name: item.product_name,
-          // Use stored quantity if available, otherwise use 0
-          current_stock:
+        // const transformedData = response.payload.map((item) => ({
+        //   id: item.id,
+        //   product_id: item.product_id,
+        //   product_name: item.product_name,
+        //   // Use stored quantity if available, otherwise use 0
+        //   current_stock:
+        //     storedStockData[item.product_id] !== undefined
+        //       ? storedStockData[item.product_id]
+        //       : 0,
+        //   actual_field: item.show_actual_qty ? item.available_qty : null,
+        //   balance: item.show_actual_qty
+        //     ? item.on_hand_qty - item.available_qty
+        //     : null,
+        //   show_actual_qty: item.show_actual_qty,
+        //   on_hand_qty: item.on_hand_qty,
+        //   available_qty: item.available_qty,
+        // }));
+
+        // Transform API data to table format
+        const transformedData = response.payload.map((item) => {
+          const savedQty =
             storedStockData[item.product_id] !== undefined
               ? storedStockData[item.product_id]
-              : 0,
-          actual_field: item.show_actual_qty ? item.available_qty : null,
-          balance: item.show_actual_qty
-            ? item.on_hand_qty - item.available_qty
-            : null,
-          show_actual_qty: item.show_actual_qty,
-          on_hand_qty: item.on_hand_qty,
-          available_qty: item.available_qty,
-        }));
+              : 0;
+
+          return {
+            id: item.id,
+            product_id: item.product_id,
+            product_name: item.product_name,
+            current_stock: savedQty,
+            actual_field: item.show_actual_qty ? item.available_qty : null,
+            balance:
+              item.show_actual_qty && item.available_qty != null
+                ? savedQty - item.available_qty
+                : null,
+            show_actual_qty: item.show_actual_qty,
+            on_hand_qty: item.on_hand_qty,
+            available_qty: item.available_qty,
+          };
+        });
 
         setTableData(transformedData);
       } else {
@@ -107,39 +130,73 @@ const StockCountView = () => {
     }
   };
 
+  // const updateQuantity = async (productId, newQuantity) => {
+  //   try {
+  //     const result = await updateCurrentStock(productId, newQuantity);
+
+  //     if (result.success) {
+  //       console.log("Quantity updated successfully:", result.message);
+  //       toast.show("Stock updated", {
+  //         type: "Success",
+  //       });
+
+  //       // Save to AsyncStorage
+  //       await saveStockData(productId, newQuantity);
+
+  //       // Update local state
+  //       setTableData((prevData) =>
+  //         prevData.map((item) =>
+  //           item.product_id === productId
+  //             ? { ...item, current_stock: newQuantity }
+  //             : item
+  //         )
+  //       );
+  //     } else {
+  //       console.error("Failed to update quantity:", result.message);
+  //       toast.show(result.message, {
+  //         type: "error",
+  //       });
+  //     }
+  //   } catch (err) {
+  //     console.error("Error updating quantity:", err);
+  //     setError("Failed to update quantity");
+  //     toast.show("Failed to update quantity", {
+  //       type: "error",
+  //     });
+  //   }
+  // };
+
   const updateQuantity = async (productId, newQuantity) => {
     try {
       const result = await updateCurrentStock(productId, newQuantity);
 
       if (result.success) {
-        console.log("Quantity updated successfully:", result.message);
-        toast.show("Stock updated", {
-          type: "Success",
-        });
+        toast.show("Stock updated", { type: "Success" });
 
         // Save to AsyncStorage
         await saveStockData(productId, newQuantity);
 
-        // Update local state
+        // Update local state with recalculated balance
         setTableData((prevData) =>
           prevData.map((item) =>
             item.product_id === productId
-              ? { ...item, current_stock: newQuantity }
+              ? {
+                  ...item,
+                  current_stock: newQuantity,
+                  balance:
+                    item.show_actual_qty && item.actual_field != null
+                      ? newQuantity - item.actual_field
+                      : null,
+                }
               : item
           )
         );
       } else {
-        console.error("Failed to update quantity:", result.message);
-        toast.show(result.message, {
-          type: "error",
-        });
+        toast.show(result.message, { type: "error" });
       }
     } catch (err) {
+      toast.show("Failed to update quantity", { type: "error" });
       console.error("Error updating quantity:", err);
-      setError("Failed to update quantity");
-      toast.show("Failed to update quantity", {
-        type: "error",
-      });
     }
   };
 

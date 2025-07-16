@@ -283,6 +283,7 @@ const DetailScreen = ({ activeName, productLines }) => {
                     availableQty={product.on_hand_qty}
                     expiryDate={product.lot_name}
                     batchNumber={product.expiry_date}
+                    deliveryDate={product.scheduled_date}
                     fromZone={product.location_name}
                     toZone={product.location_dest_name}
                     fromColor="purple"

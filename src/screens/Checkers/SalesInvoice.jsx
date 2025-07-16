@@ -25,6 +25,7 @@ const SalesInvoice = ({ onPress }) => {
           sale_id: sale.sale_id,
           id: picking.id,
           order_no: picking.order_no,
+          universalDone: sale.state,
           location_id: picking.location_id,
           location_name: picking.location_name,
           location_dest_id: picking.location_dest_id,
@@ -106,9 +107,14 @@ const SalesInvoice = ({ onPress }) => {
           // updateListCount("checkerSaleInvoice", completedCount);
           // setInvoices(groupedData);
           const groupedData = groupByOrderNo(transformedPayload); // Group by order number
+          // const completedOrders = groupedData.filter(
+          //   (group) => group.status === "Completed"
+          // );
           const completedOrders = groupedData.filter(
-            (group) => group.status === "Completed"
-          );
+            (group) =>
+              group.status !== "Reassign" &&
+              (group.status === "Completed" || group.items.some(item => item.universalDone !== "done"))
+          );     
           updateListCount("checkerSaleInvoice", completedOrders.length);
           setInvoices(completedOrders);
         } else {

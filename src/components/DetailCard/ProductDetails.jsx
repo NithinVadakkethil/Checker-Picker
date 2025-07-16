@@ -36,6 +36,7 @@ const ProductDetails = ({
   orderStaus,
   loading,
   batchNumber,
+  deliveryDate
 }) => {
   const ReAsgnBadge = () => {
     return (
@@ -47,7 +48,11 @@ const ProductDetails = ({
 
   return (
     <View className="flex-1">
-      <View className={`flex-row justify-between items-center border-b border-[#CBCBCB]/30 ${!orderNo && 'pb-4'}`}>
+      <View
+        className={`flex-row justify-between items-center border-b border-[#CBCBCB]/30 ${
+          !orderNo && "pb-4"
+        }`}
+      >
         {orderNo && (
           <>
             <OrderHeader orderNo={orderNo} />
@@ -158,8 +163,12 @@ const ProductDetails = ({
           <LabelInfo label={"Picker"} value={pickerName} />
           {/* <LabelInfo label={"Expiry Date"} value={batchNumber} /> */}
           <View className="flex-row items-center ">
-            <Text className="text-xs text-[#4D4D4D] font-normal">Expiry Date: </Text>
-            <Text className="text-[#000] font-semibold text-sm">{batchNumber}</Text>
+            <Text className="text-xs text-[#4D4D4D] font-normal">
+              Expiry Date:{" "}
+            </Text>
+            <Text className="text-[#000] font-semibold text-sm">
+              {batchNumber}
+            </Text>
           </View>
         </View>
       )}
@@ -168,11 +177,23 @@ const ProductDetails = ({
           <View className="flex-col gap-2">
             {/* <LabelInfo label={"Available Qty"} value={availableQty} /> */}
             <View className="flex-row items-center ">
-                <Text className="text-xs text-[#4D4D4D] font-normal">Available Qty: </Text>
+              <Text className="text-xs text-[#4D4D4D] font-normal">
+                Available Qty:{" "}
+              </Text>
+              <Text className="text-[#000] font-semibold text-sm">
+                {availableQty}
+              </Text>
+            </View>
+            {type === "Checker" && activeName === "Scheduled Delivery" && (
+              <View className="flex-row items-center ">
+                <Text className="text-xs text-[#4D4D4D] font-normal">
+                  Date:{" "}
+                </Text>
                 <Text className="text-[#000] font-semibold text-sm">
-                  {availableQty}
+                  {deliveryDate}
                 </Text>
               </View>
+            )}
             {type !== "Checker" && (
               // <LabelInfo label={"Expiry Date"} value={batchNumber} />
               <View className="flex-row items-center ">
@@ -206,10 +227,10 @@ const ProductDetails = ({
         {activeName !== "Reciepts" ? (
           <LabelInfo label={"UOM"} value={`${qty} ${uom}`} />
         ) : (
-          <Text>
+          <View className="flex-row items-center">
             <Text className="font-normal text-xs">Qty </Text>
             <Text className="text-[#000] font-bold text-xl">{qty}</Text>
-          </Text>
+          </View>
         )}
       </View>
       {/* <View className="flex-row justify-between items-center">
