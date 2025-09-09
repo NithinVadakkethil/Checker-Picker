@@ -97,25 +97,47 @@ const StockCountView = () => {
         // }));
 
         // Transform API data to table format
-        const transformedData = response.payload.map((item) => {
-          const savedQty =
-            storedStockData[item.product_id] !== undefined
-              ? storedStockData[item.product_id]
-              : 0;
+        // const transformedData = response.payload.map((item) => {
+        //   const savedQty =
+        //     storedStockData[item.product_id] !== undefined
+        //       ? storedStockData[item.product_id]
+        //       : 0;
 
+        //   return {
+        //     id: item.id,
+        //     product_id: item.product_id,
+        //     product_name: item.product_name,
+        //     current_stock: savedQty,
+        //     actual_field: item.show_actual_qty ? item.available_qty : null,
+        //     balance:
+        //       item.show_actual_qty && item.available_qty != null
+        //         ? savedQty - item.available_qty
+        //         : null,
+        //     show_actual_qty: item.show_actual_qty,
+        //     on_hand_qty: item.on_hand_qty,
+        //     available_qty: item.available_qty,
+        //   };
+        // });
+
+        const transformedData = response.payload.map((item) => {
+          const savedQty = storedStockData[item.id] !== undefined // Use item.id instead of product_id
+            ? storedStockData[item.id]
+            : 0;
+        
           return {
             id: item.id,
             product_id: item.product_id,
             product_name: item.product_name,
             current_stock: savedQty,
             actual_field: item.show_actual_qty ? item.available_qty : null,
-            balance:
-              item.show_actual_qty && item.available_qty != null
-                ? savedQty - item.available_qty
-                : null,
+            balance: item.show_actual_qty && item.available_qty != null
+              ? savedQty - item.available_qty
+              : null,
             show_actual_qty: item.show_actual_qty,
             on_hand_qty: item.on_hand_qty,
             available_qty: item.available_qty,
+            lot_id: item.lot_id,  // Include lot information
+            lot_name: item.lot_name
           };
         });
 

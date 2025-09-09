@@ -109,6 +109,7 @@ export const checkerZoneTransferVerify = async (saleId) => {
 };
 
 export const updateCurrentStock = async (id, quantity) => {
+  console.log("id--->", id)
   try {
     const response = await axiosInstance.patch(`/picker/update_quantity/${id}`, {
       quantity
@@ -172,5 +173,36 @@ export const updatecheckerDate = async (id , date) => {
       success: false,
       message: error.response?.data?.message || "Updation failed",
     };
+  }
+};
+
+// Add to your apiService.js file
+export const apiGetAvailableProducts = async () => {
+  try {
+    const response = await axiosInstance.get('/picker/available_products');
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch available products:', error);
+    throw error;
+  }
+};
+
+export const apiGetDestinationLocations = async () => {
+  try {
+    const response = await axiosInstance.get('/picker/destination_locations');
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch destination locations:', error);
+    throw error;
+  }
+};
+
+export const apiCreateInternalTransfer = async (transferData) => {
+  try {
+    const response = await axiosInstance.post('/picker/create_internal_transfer', transferData);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to create internal transfer:', error);
+    throw error;
   }
 };

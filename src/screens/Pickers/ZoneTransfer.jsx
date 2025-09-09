@@ -90,17 +90,6 @@ const ZoneTransfer = ({ navigation, onPress }) => {
               item.state === "picker_pending" || item.state === "reassigned"
           ).length;
           updateListCount("zoneTransfer", pendingCount);
-          // Sort: pending ("picker_pending") first, then others
-          // const sortedData = groupedData.sort((a, b) => {
-          //   const priority = {
-          //     picker_pending: 0,
-          //     reassigned: 1,
-          //     picker_done: 2,
-          //     checker_verified: 3,
-          //   };
-
-          //   return priority[a.state] - priority[b.state];
-          // });
 
           const pendingData = groupedData.filter(
             (item) => item.state === "picker_pending" || item.state === "reassigned"
@@ -128,6 +117,35 @@ const ZoneTransfer = ({ navigation, onPress }) => {
     createBottomSheetRef.current.open();
   };
 
+  // Add this function to refresh data after creation
+  const refreshData = async () => {
+    setLoading(true);
+    try {
+      const response = await apiGet("/picker/zone_all_tasks");
+      if (response?.payload) {
+        const transformedPayload = transformPayload(response.payload);
+        const groupedData = groupByOrderNo(transformedPayload);
+        const pendingCount = groupedData.filter(
+          (item) =>
+            item.state === "picker_pending" || item.state === "reassigned"
+        ).length;
+        updateListCount("zoneTransfer", pendingCount);
+
+        const pendingData = groupedData.filter(
+          (item) => item.state === "picker_pending" || item.state === "reassigned"
+        );
+
+        setTransferItems(pendingData);
+      } else {
+        setTransferItems([]);
+      }
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View className="flex-1">
       {loading || error ? (
@@ -139,48 +157,62 @@ const ZoneTransfer = ({ navigation, onPress }) => {
           )}
         </View>
       ) : transferItems.length < 1 ? (
-        <View className="flex-1 justify-center items-center">
-          <Text className="text-red-500 text-lg">No datas found</Text>
-        </View>
+        <>
+          <TouchableOpacity
+            onPress={createSheetOpen}
+            className="items-end mb-5"
+          >
+            <View className="bg-[#144D4D] px-3 py-2 rounded-md">
+              <Text className="text-[#FFFFFF]">Create</Text>
+            </View>
+          </TouchableOpacity>
+          <View className="flex-1 justify-center items-center">
+            <Text className="text-red-500 text-lg">No datas found</Text>
+          </View>
+        </>
       ) : (
-        <FlatList
-          data={transferItems}
-          keyExtractor={(item) => item.order_no}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => onPress(7, "Zone Transfer", item.items)}
-            >
-              <TransferItem
-                status={
-                  item.state === "picker_pending"
-                    ? "Pending"
-                    : item.state === "reassigned" ? "Reassigned" : item.state === "checker_verified"
-                    ? "Verified"
-                    : "Completed"
-                }
-                fromZone={item.from}
-                fromColor="#2F80ED" // Adjust color dynamically if needed
-                toColor="#EB5B00"
-                toZone={item.to}
-              />
-            </TouchableOpacity>
-          )}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 30 }}
-        />
+        <>
+          <TouchableOpacity
+            onPress={createSheetOpen}
+            className="items-end mb-5"
+          >
+            <View className="bg-[#144D4D] px-3 py-2 rounded-md">
+              <Text className="text-[#FFFFFF]">Create</Text>
+            </View>
+          </TouchableOpacity>
+          <FlatList
+            data={transferItems}
+            keyExtractor={(item) => item.order_no}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => onPress(7, "Zone Transfer", item.items)}
+              >
+                <TransferItem
+                  status={
+                    item.state === "picker_pending"
+                      ? "Pending"
+                      : item.state === "reassigned" ? "Reassigned" : item.state === "checker_verified"
+                        ? "Verified"
+                        : "Completed"
+                  }
+                  fromZone={item.from}
+                  fromColor="#2F80ED" // Adjust color dynamically if needed
+                  toColor="#EB5B00"
+                  toZone={item.to}
+                />
+              </TouchableOpacity>
+            )}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 30 }}
+          />
+        </>
       )}
-
-      {/* <TouchableOpacity
-        onPress={createSheetOpen}
-        className="absolute bottom-5 left-1/2 -translate-x-1/2"
-      >
-        <Add />
-      </TouchableOpacity> */}
       <CreateBottomSheet
         onClose={createSheetClose}
         onOpen={createSheetOpen}
         bottomSheetRef={createBottomSheetRef}
+        onTransferCreated={refreshData} // Add this prop
       />
     </View>
   );

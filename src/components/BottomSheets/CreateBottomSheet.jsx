@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, View, ScrollView, Text, TouchableOpacity } from "
 import RBSheet from "react-native-raw-bottom-sheet";
 import CreateForm from "../Form/CreateForm";
 
-const CreateBottomSheet = ({ bottomSheetRef, onClose }) => {
+const CreateBottomSheet = ({ bottomSheetRef, onClose, onTransferCreated }) => {
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       {/* Bottom Sheet Component */}
@@ -29,7 +29,7 @@ const CreateBottomSheet = ({ bottomSheetRef, onClose }) => {
         //   style={{ flex: 1 }} // Avoid flex: 1 if it causes issues
         >
           <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-            <CreateForm onClose={onClose} />
+            <CreateForm onClose={onClose} onTransferCreated={onTransferCreated}/>
           </ScrollView>
         </KeyboardAvoidingView>
       </RBSheet>

@@ -3,8 +3,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
 const axiosInstance = axios.create({
-  // baseURL: "https://fifi.zinfog.in",
   baseURL: "https://fifilive.zinfog.in",
+  // baseURL: "https://fifi-test.zinfog.in",
   headers: {
     "Content-Type": "application/json",
   },

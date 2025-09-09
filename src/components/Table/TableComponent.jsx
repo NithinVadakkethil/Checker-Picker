@@ -16,6 +16,7 @@ const TableComponent = ({
   const flatListRef = useRef(null);
 
   const handleQuantitySubmit = (productId, value, index) => {
+    console.log("productId--->", productId)
     const numericValue = parseFloat(value) || 0;
     onUpdateQuantity(productId, numericValue);
     Keyboard.dismiss();
@@ -57,7 +58,7 @@ const TableComponent = ({
           placeholder="0"
           onFocus={() => handleFocus(index)}
           onSubmitEditing={(e) =>
-            handleQuantitySubmit(item.product_id, e.nativeEvent.text, index)
+            handleQuantitySubmit(item.id, e.nativeEvent.text, index)
           }
           returnKeyType="done"
           selectTextOnFocus={true}
