@@ -1,25 +1,47 @@
-import { View, Text, TouchableOpacity, TextInput, Alert, ActivityIndicator, ScrollView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  Platform,
+  StyleSheet,
+} from "react-native";
 import React, { useState, useEffect } from "react";
-import { SelectList } from "react-native-dropdown-select-list";
+import { Dropdown } from "react-native-element-dropdown";
 import FormGroup from "./FormGroup";
 import CloseIcon from "../../assets/icons/Close.svg";
-import { apiGetAvailableProducts, apiGetDestinationLocations, apiCreateInternalTransfer } from "../../api/CommonService";
-// import DateTimePicker from '@react-native-community/datetimepicker';
+import { useToast } from "react-native-toast-notifications";
+import {
+  apiGetAvailableProducts,
+  apiGetDestinationLocations,
+  apiCreateInternalTransfer,
+} from "../../api/CommonService";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const CreateForm = ({ onClose, onTransferCreated }) => {
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
   const [locations, setLocations] = useState([]);
   const [errors, setErrors] = useState({});
   const [showDatePicker, setShowDatePicker] = useState(false);
-  
+  const [dropdownFocus, setDropdownFocus] = useState({
+    product_id: false,
+    dest_location_id: false,
+    uom_id: false,
+    lot_id: false
+  });
+
   const [formData, setFormData] = useState({
     product_id: "",
     uom_id: "",
     lot_id: "",
     quantity: "",
     dest_location_id: "",
-    scheduled_date: new Date().toISOString().split('T')[0] // Default to today
+    scheduled_date: new Date().toISOString().split("T")[0], // Default to today
   });
 
   // Fetch products and locations on component mount
@@ -30,7 +52,7 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch products
       const productsResponse = await apiGetAvailableProducts();
       if (productsResponse.statusOk) {
@@ -52,73 +74,82 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.product_id) {
       newErrors.product_id = "Product is required";
     }
-    
+
     if (!formData.dest_location_id) {
       newErrors.dest_location_id = "Destination location is required";
     }
-    
+
     if (!formData.quantity) {
       newErrors.quantity = "Quantity is required";
     } else if (parseFloat(formData.quantity) <= 0) {
       newErrors.quantity = "Quantity must be greater than 0";
     }
-    
+
     if (!formData.scheduled_date) {
       newErrors.scheduled_date = "Scheduled date is required";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
-    
+
     // Clear error when field is updated
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [field]: null
+        [field]: null,
       }));
     }
   };
 
   const handleProductSelect = (productId) => {
-    const selectedProduct = products.find(p => p.product_id.toString() === productId);
+    const selectedProduct = products.find(
+      (p) => p.product_id.toString() === productId
+    );
     if (selectedProduct) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         product_id: productId,
         uom_id: selectedProduct.uom_ids[0]?.id?.toString() || "",
-        lot_id: selectedProduct.lots[0]?.id?.toString() || ""
+        lot_id: selectedProduct.lots[0]?.id?.toString() || "",
       }));
-      
+
       // Clear product-related errors
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        product_id: null
+        product_id: null,
       }));
     }
   };
 
   const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(Platform.OS === 'ios'); // Keep open on iOS, close on Android
-    
+    setShowDatePicker(Platform.OS === "ios"); // Keep open on iOS, close on Android
+
     if (selectedDate) {
-      const formattedDate = selectedDate.toISOString().split('T')[0];
-      handleInputChange('scheduled_date', formattedDate);
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      handleInputChange("scheduled_date", formattedDate);
     }
   };
 
   const showDatepicker = () => {
     setShowDatePicker(true);
+  };
+
+  const handleDropdownFocus = (field, isFocus) => {
+    setDropdownFocus(prev => ({
+      ...prev,
+      [field]: isFocus
+    }));
   };
 
   const handleSave = async () => {
@@ -128,39 +159,52 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
 
     try {
       setLoading(true);
-      
+
       const transferData = {
         dest_location_id: parseInt(formData.dest_location_id),
         scheduled_date: formData.scheduled_date,
-        products: [{
-          product_id: parseInt(formData.product_id),
-          uom_id: parseInt(formData.uom_id),
-          quantity: parseFloat(formData.quantity),
-          lot_id: parseInt(formData.lot_id)
-        }]
+        products: [
+          {
+            product_id: parseInt(formData.product_id),
+            uom_id: parseInt(formData.uom_id),
+            quantity: parseFloat(formData.quantity),
+            lot_id: parseInt(formData.lot_id),
+          },
+        ],
       };
 
       const response = await apiCreateInternalTransfer(transferData);
 
-      console.log("response-->", response)
-      
+      console.log("response-->", response);
+
       if (response.statusOk) {
-        Alert.alert("Success", "Transfer created successfully");
+        toast.show("Internal transfer created", {
+          type: "Success",
+          // placement: "top",
+        });
         onTransferCreated?.(); // Refresh the parent list
         onClose();
       } else {
-        Alert.alert("Error", response.message || "Failed to create transfer");
+        toast.show(response.message || "Failed to create transfer", {
+          type: "error",
+        });
       }
     } catch (error) {
-      Alert.alert("Error", error.response?.data?.message || "Failed to create transfer");
+      toast.show(error.response?.data?.message || "Failed to create transfer", {
+        type: "error",
+      });
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedProduct = products.find(p => p.product_id.toString() === formData.product_id);
-  const selectedLocation = locations.find(l => l.id.toString() === formData.dest_location_id);
+  const selectedProduct = products.find(
+    (p) => p.product_id.toString() === formData.product_id
+  );
+  const selectedLocation = locations.find(
+    (l) => l.id.toString() === formData.dest_location_id
+  );
 
   if (loading && products.length === 0) {
     return (
@@ -183,61 +227,83 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
       </View>
 
       <FormGroup label="To*">
-        <SelectList
-          setSelected={(value) => handleInputChange('dest_location_id', value)}
-          data={locations.map(location => ({
-            key: location.id.toString(),
-            value: location.name
+        <Dropdown
+          style={[
+            styles.dropdown,
+            {
+              borderColor: errors.dest_location_id 
+                ? "#FF0000" 
+                : dropdownFocus.dest_location_id 
+                  ? "#001C4F" 
+                  : "#EFEFEF",
+              backgroundColor: "#F8F9FC",
+            }
+          ]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={locations.map((location) => ({
+            label: location.name,
+            value: location.id.toString(),
           }))}
-          save="key"
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
           placeholder="Select Destination"
           searchPlaceholder="Search location..."
-          boxStyles={{
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: errors.dest_location_id ? "#FF0000" : "#EFEFEF",
-            backgroundColor: "#F8F9FC",
-            paddingHorizontal: 16,
-            paddingVertical: 10,
+          value={formData.dest_location_id}
+          onFocus={() => handleDropdownFocus("dest_location_id", true)}
+          onBlur={() => handleDropdownFocus("dest_location_id", false)}
+          onChange={item => {
+            handleInputChange("dest_location_id", item.value);
           }}
-          dropdownStyles={{
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: "#EFEFEF",
-            backgroundColor: "#FFFFFF",
-          }}
-          disabled={loading}
+          renderLeftIcon={() => null}
+          disable={loading}
         />
         {errors.dest_location_id && (
-          <Text className="text-red-500 text-xs mt-1">{errors.dest_location_id}</Text>
+          <Text className="text-red-500 text-xs mt-1">
+            {errors.dest_location_id}
+          </Text>
         )}
       </FormGroup>
 
       <FormGroup label="Product Name*">
-        <SelectList
-          setSelected={(value) => handleProductSelect(value)}
-          data={products.map(product => ({
-            key: product.product_id.toString(),
-            value: product.product_name
+        <Dropdown
+          style={[
+            styles.dropdown,
+            {
+              borderColor: errors.product_id 
+                ? "#FF0000" 
+                : dropdownFocus.product_id 
+                  ? "#001C4F" 
+                  : "#EFEFEF",
+              backgroundColor: "#F8F9FC",
+            }
+          ]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={products.map((product) => ({
+            label: product.product_name,
+            value: product.product_id.toString(),
           }))}
-          save="key"
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
           placeholder="Select Product"
           searchPlaceholder="Search product..."
-          boxStyles={{
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: errors.product_id ? "#FF0000" : "#EFEFEF",
-            backgroundColor: "#F8F9FC",
-            paddingHorizontal: 16,
-            paddingVertical: 10,
+          value={formData.product_id}
+          onFocus={() => handleDropdownFocus("product_id", true)}
+          onBlur={() => handleDropdownFocus("product_id", false)}
+          onChange={item => {
+            handleProductSelect(item.value);
           }}
-          dropdownStyles={{
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: "#EFEFEF",
-            backgroundColor: "#FFFFFF",
-          }}
-          disabled={loading}
+          renderLeftIcon={() => null}
+          disable={loading}
         />
         {errors.product_id && (
           <Text className="text-red-500 text-xs mt-1">{errors.product_id}</Text>
@@ -247,64 +313,68 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
       {selectedProduct && (
         <>
           <FormGroup label="UOM">
-            <SelectList
-              setSelected={(value) => handleInputChange('uom_id', value)}
-              data={selectedProduct.uom_ids.map(uom => ({
-                key: uom.id.toString(),
-                value: uom.name
+            <Dropdown
+              style={[
+                styles.dropdown,
+                {
+                  borderColor: dropdownFocus.uom_id ? "#001C4F" : "#EFEFEF",
+                  backgroundColor: "#F8F9FC",
+                }
+              ]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              data={selectedProduct.uom_ids.map((uom) => ({
+                label: uom.name,
+                value: uom.id.toString(),
               }))}
-              save="key"
+              search
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
               placeholder="Select UOM"
-              defaultOption={{
-                key: selectedProduct.uom_ids[0]?.id?.toString() || "",
-                value: selectedProduct.uom_ids[0]?.name || "No UOM available"
+              value={formData.uom_id}
+              onFocus={() => handleDropdownFocus("uom_id", true)}
+              onBlur={() => handleDropdownFocus("uom_id", false)}
+              onChange={item => {
+                handleInputChange("uom_id", item.value);
               }}
-              boxStyles={{
-                borderRadius: 4,
-                borderWidth: 1,
-                borderColor: "#EFEFEF",
-                backgroundColor: "#F8F9FC",
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-              }}
-              dropdownStyles={{
-                borderRadius: 4,
-                borderWidth: 1,
-                borderColor: "#EFEFEF",
-                backgroundColor: "#FFFFFF",
-              }}
-              disabled={loading}
+              renderLeftIcon={() => null}
+              disable={loading}
             />
           </FormGroup>
 
-          <FormGroup label="Lot">
-            <SelectList
-              setSelected={(value) => handleInputChange('lot_id', value)}
-              data={selectedProduct.lots.map(lot => ({
-                key: lot.id.toString(),
-                value: `${lot.name} (Qty: ${lot.on_hand})`
+          <FormGroup label="Batch No">
+            <Dropdown
+              style={[
+                styles.dropdown,
+                {
+                  borderColor: dropdownFocus.lot_id ? "#001C4F" : "#EFEFEF",
+                  backgroundColor: "#F8F9FC",
+                }
+              ]}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              inputSearchStyle={styles.inputSearchStyle}
+              iconStyle={styles.iconStyle}
+              data={selectedProduct.lots.map((lot) => ({
+                label: `${lot.name} (Qty: ${lot.on_hand})`,
+                value: lot.id.toString(),
               }))}
-              save="key"
+              search
+              maxHeight={300}
+              labelField="label"
+              valueField="value"
               placeholder="Select Lot"
-              defaultOption={{
-                key: selectedProduct.lots[0]?.id?.toString() || "",
-                value: selectedProduct.lots[0]?.name || "No lots available"
+              value={formData.lot_id}
+              onFocus={() => handleDropdownFocus("lot_id", true)}
+              onBlur={() => handleDropdownFocus("lot_id", false)}
+              onChange={item => {
+                handleInputChange("lot_id", item.value);
               }}
-              boxStyles={{
-                borderRadius: 4,
-                borderWidth: 1,
-                borderColor: "#EFEFEF",
-                backgroundColor: "#F8F9FC",
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-              }}
-              dropdownStyles={{
-                borderRadius: 4,
-                borderWidth: 1,
-                borderColor: "#EFEFEF",
-                backgroundColor: "#FFFFFF",
-              }}
-              disabled={loading}
+              renderLeftIcon={() => null}
+              disable={loading}
             />
           </FormGroup>
         </>
@@ -312,11 +382,13 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
 
       <FormGroup label="Quantity*">
         <TextInput
-          className={`border ${errors.quantity ? "border-red-500" : "border-[#EFEFEF]"} bg-[#F8F9FC] rounded-[4px] px-4 py-3 text-gray-900`}
+          className={`border ${
+            errors.quantity ? "border-red-500" : "border-[#EFEFEF]"
+          } bg-[#F8F9FC] rounded-[4px] px-4 py-3 text-gray-900`}
           placeholder="Enter Quantity"
           keyboardType="numeric"
           value={formData.quantity}
-          onChangeText={(value) => handleInputChange('quantity', value)}
+          onChangeText={(value) => handleInputChange("quantity", value)}
           editable={!loading}
         />
         {errors.quantity && (
@@ -327,7 +399,9 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
       <FormGroup label="Scheduled Date">
         <TouchableOpacity onPress={showDatepicker} disabled={loading}>
           <TextInput
-            className={`border ${errors.scheduled_date ? "border-red-500" : "border-[#EFEFEF]"} bg-[#F8F9FC] rounded-[4px] px-4 py-3 text-gray-900`}
+            className={`border ${
+              errors.scheduled_date ? "border-red-500" : "border-[#EFEFEF]"
+            } bg-[#F8F9FC] rounded-[4px] px-4 py-3 text-gray-900`}
             placeholder="YYYY-MM-DD"
             value={formData.scheduled_date}
             editable={false}
@@ -335,17 +409,19 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
           />
         </TouchableOpacity>
         {errors.scheduled_date && (
-          <Text className="text-red-500 text-xs mt-1">{errors.scheduled_date}</Text>
+          <Text className="text-red-500 text-xs mt-1">
+            {errors.scheduled_date}
+          </Text>
         )}
-        
-        {/* {showDatePicker && (
+
+        {showDatePicker && (
           <DateTimePicker
             value={new Date(formData.scheduled_date)}
             mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            display={Platform.OS === "ios" ? "spinner" : "default"}
             onChange={handleDateChange}
           />
-        )} */}
+        )}
       </FormGroup>
 
       {/* Save Button */}
@@ -364,5 +440,31 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  dropdown: {
+    height: 44,
+    borderWidth: 1,
+    borderRadius: 4,
+    paddingHorizontal: 16,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: '#9CA3AF',
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    color: '#111827',
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
+    borderRadius: 4,
+  },
+});
 
 export default CreateForm;

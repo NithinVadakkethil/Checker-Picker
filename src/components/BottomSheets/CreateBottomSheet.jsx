@@ -26,7 +26,7 @@ const CreateBottomSheet = ({ bottomSheetRef, onClose, onTransferCreated }) => {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-        //   style={{ flex: 1 }} // Avoid flex: 1 if it causes issues
+          style={{ flex: 1 }}
         >
           <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             <CreateForm onClose={onClose} onTransferCreated={onTransferCreated}/>
