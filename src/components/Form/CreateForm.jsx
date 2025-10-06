@@ -8,6 +8,7 @@ import {
   ScrollView,
   Platform,
   StyleSheet,
+  KeyboardAvoidingView,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Dropdown } from "react-native-element-dropdown";
@@ -216,17 +217,29 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
   }
 
   return (
-    <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-      <View className="flex-row justify-between items-center mb-6">
-        <View>
-          <Text className="text-lg font-medium">Creation</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View className="flex-row justify-between items-center mb-6">
+          <View>
+            <Text className="text-lg font-medium">Creation</Text>
+          </View>
+          <TouchableOpacity
+            onPress={onClose}
+            className="p-1"
+            disabled={loading}
+          >
+            <CloseIcon />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={onClose} className="p-1" disabled={loading}>
-          <CloseIcon />
-        </TouchableOpacity>
-      </View>
 
-      <FormGroup label="To*">
+        <FormGroup label="To*">
         <Dropdown
           style={[
             styles.dropdown,
@@ -437,7 +450,8 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
           <Text className="text-white text-center font-medium">Transfer</Text>
         )}
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
