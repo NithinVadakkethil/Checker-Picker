@@ -93,7 +93,7 @@ const DetailScreen = ({ activeName, productLines }) => {
   const pickerDateUpdate = async (orderNo, date) => {
     try {
       setLoadingForMoveId(orderNo, true);
-      const result = await updatePickerDate(orderNo, { date: date });
+      const result = await updatePickerDate(orderNo, { expiry_date: date });
       if (result?.success) {
         setGroupedProducts((prevGroups) =>
           prevGroups.map((group) =>

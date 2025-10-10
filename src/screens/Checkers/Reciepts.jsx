@@ -11,7 +11,7 @@ import { apiGet } from "../../utils/apiService";
 import { useListCount } from "../../context/ListCountContext";
 import Add from "../../assets/icons/Add.svg";
 
-const Reciepts = ({ onPress }) => {
+const Receipts = ({ onPress }) => {
   const createBottomSheetRef = useRef(null);
   const { updateListCount } = useListCount();
   const [invoices, setInvoices] = useState([]);
@@ -25,6 +25,7 @@ const Reciepts = ({ onPress }) => {
           sale_id: sale.sale_id,
           id: picking.id,
           order_no: picking.order_no,
+          purchase_id: sale.purchase_id,
           location_id: picking.location_id,
           location_name: picking.location_name,
           location_dest_id: picking.location_dest_id,
@@ -33,14 +34,14 @@ const Reciepts = ({ onPress }) => {
           product_id: product.product_id,
           product_name: product.product_name,
           on_hand_qty: product.on_hand_qty,
-          expiry_date: product.expiry_date,
+          expiry_date: product?.lots[0]?.expiry_date,
           qty: product.qty,
           uom_name: product.uom_name,
           uom_id: product.uom_id,
           state: product.state,
           reassign_reason: product.reassign_reason,
           lot_id: product.lot_id,
-          lot_name: product.lot_name || "Not added",
+          lot_name: product?.lots[0]?.lot_name,
           picker_id: picking.picker_id,
           picker_name: picking.picker_name,
         }))
@@ -153,7 +154,7 @@ const Reciepts = ({ onPress }) => {
           keyExtractor={(item) => item.order_no}
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => onPress(6, "Reciepts", item.items)}
+              onPress={() => onPress(6, "Receipts", item.items)}
             >
               <OrderStatusCard
                 status={item.status}
@@ -181,4 +182,4 @@ const Reciepts = ({ onPress }) => {
   );
 };
 
-export default Reciepts;
+export default Receipts;

@@ -32,25 +32,59 @@ const EditBottomSheet = ({ bottomSheetRef, onClose, selectedDate, setSelectedDat
     setCurrentMonth(currentMonth.add(1, "month"));
   };
 
+  // const renderDateCell = (date, index) => {
+  //   if (!date) {
+  //     return <View key={index} className="w-[14.28%] h-10 my-1" />;
+  //   }
+  
+  //   const isToday = dayjs().isSame(date, "day");
+  //   const isSelected =
+  //     date?.format("YYYY-MM-DD") === selectedDate?.format("YYYY-MM-DD");
+  
+  //   let bgColor = "";
+  //   let textColor = "text-black";
+  
+  //   if (isToday) {
+  //     bgColor = "bg-yellow-300"; // Color for today's date
+  //     textColor = "text-black font-bold";
+  //   }
+  
+  //   if (isSelected) {
+  //     bgColor = "bg-teal-800"; // Override if selected
+  //     textColor = "text-white font-semibold";
+  //   }
+  
+  //   return (
+  //     <TouchableOpacity
+  //       key={index}
+  //       className={`w-[14.28%] h-10 justify-center items-center my-1 ${bgColor} rounded-full`}
+  //       onPress={() => setSelectedDate(date)}
+  //     >
+  //       <Text className={`text-sm ${textColor}`}>
+  //         {date?.format("DD")}
+  //       </Text>
+  //     </TouchableOpacity>
+  //   );
+  // };
+
   const renderDateCell = (date, index) => {
     if (!date) {
       return <View key={index} className="w-[14.28%] h-10 my-1" />;
     }
   
     const isToday = dayjs().isSame(date, "day");
-    const isSelected =
-      date?.format("YYYY-MM-DD") === selectedDate?.format("YYYY-MM-DD");
+    const isSelected = date?.format("YYYY-MM-DD") === selectedDate;
   
     let bgColor = "";
     let textColor = "text-black";
   
     if (isToday) {
-      bgColor = "bg-yellow-300"; // Color for today's date
+      bgColor = "bg-yellow-300";
       textColor = "text-black font-bold";
     }
   
     if (isSelected) {
-      bgColor = "bg-teal-800"; // Override if selected
+      bgColor = "bg-teal-800";
       textColor = "text-white font-semibold";
     }
   
@@ -58,14 +92,14 @@ const EditBottomSheet = ({ bottomSheetRef, onClose, selectedDate, setSelectedDat
       <TouchableOpacity
         key={index}
         className={`w-[14.28%] h-10 justify-center items-center my-1 ${bgColor} rounded-full`}
-        onPress={() => setSelectedDate(date)}
+        onPress={() => setSelectedDate(date.format("YYYY-MM-DD"))}
       >
         <Text className={`text-sm ${textColor}`}>
           {date?.format("DD")}
         </Text>
       </TouchableOpacity>
     );
-  };
+  };  
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>

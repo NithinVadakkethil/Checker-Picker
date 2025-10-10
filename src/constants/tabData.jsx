@@ -5,7 +5,7 @@ import {
   ScheduledDelivery,
   StockCountView,
   History,
-  Reciepts,
+  Receipts,
   CheckerSalesInvoice,
   CheckerZoneTransfer,
   CheckerScheduledDelivery,
@@ -42,9 +42,9 @@ export const usePickersTabData = () => {
     },
     {
       id: 5,
-      name: "Reciepts",
+      name: "Receipts",
       count: listCounts.reciepts,
-      component: Reciepts,
+      component: Receipts,
     },
     {
       id: 6,
@@ -78,7 +78,7 @@ export const usecheckersTabData = () => {
     },
     {
       id: 4,
-      name: "Reciepts",
+      name: "Receipts",
       count: listCounts.checkerReciepts,
       component: CheckerReciepts,
     },

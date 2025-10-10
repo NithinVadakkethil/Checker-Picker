@@ -108,6 +108,27 @@ export const checkerZoneTransferVerify = async (saleId) => {
   }
 };
 
+export const checkerReceiptVerify = async (purchaseId) => {
+  try {
+    const response = await axiosInstance.patch(`/checker/verify_purchase_receipt/${purchaseId}`);
+
+    console.log("Update reciept Success:", response.data);
+    if (response?.data?.statusOk) {
+      return { success: true, message: response?.data?.message, batchNo: response?.data?.payload[0]?.lot_name};
+    }
+  } catch (error) {
+    console.error("Update Failed:", error);
+    console.error(
+      "Status Update Error:",
+      error.response?.data || error.message
+    );
+    return {
+      success: false,
+      message: error.response?.data?.message || "Updation failed",
+    };
+  }
+};
+
 export const updateCurrentStock = async (id, quantity) => {
   console.log("id--->", id)
   try {
@@ -133,6 +154,7 @@ export const updateCurrentStock = async (id, quantity) => {
 };
 
 export const updatePickerDate = async (id , date) => {
+  console.log("date-->", date)
   try {
     const response = await axiosInstance.patch(
       `/picker/update_product_pick_status/${id}`, date

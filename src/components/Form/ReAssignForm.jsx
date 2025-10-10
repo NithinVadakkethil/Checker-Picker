@@ -34,11 +34,10 @@ const ReAssignForm = ({
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20} // Adjust if needed
     >
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
-        keyboardShouldPersistTaps="handled"
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
       >
         <View style={{ flex: 1 }}>

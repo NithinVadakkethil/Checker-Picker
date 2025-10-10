@@ -10,7 +10,7 @@ import { OrderStatusCard, CreateBottomSheet } from "../../components";
 import { apiGet } from "../../utils/apiService";
 import { useListCount } from "../../context/ListCountContext";
 
-const Reciepts = ({ onPress }) => {
+const Receipts = ({ onPress }) => {
   const createBottomSheetRef = useRef(null);
   const { updateListCount } = useListCount();
   const [reciepts, setReciepts] = useState([]);
@@ -159,7 +159,7 @@ const Reciepts = ({ onPress }) => {
           keyExtractor={(item) => item.order_no} // Unique by order_no
           renderItem={({ item }) => (
             <TouchableOpacity
-              onPress={() => onPress(7, "Reciepts", item.items)}
+              onPress={() => onPress(7, "Receipts", item.items)}
             >
               <OrderStatusCard
                 status={
@@ -195,4 +195,4 @@ const Reciepts = ({ onPress }) => {
   );
 };
 
-export default Reciepts;
+export default Receipts;

@@ -121,8 +121,14 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
       setFormData((prev) => ({
         ...prev,
         product_id: productId,
-        uom_id: selectedProduct.uom_ids[0]?.id?.toString() || "",
-        lot_id: selectedProduct.lots[0]?.id?.toString() || "",
+        uom_id:
+          selectedProduct.uom_ids.length === 1
+            ? selectedProduct.uom_ids[0]?.id?.toString()
+            : "",
+        lot_id:
+          selectedProduct.lots.length === 1
+            ? selectedProduct.lots[0]?.id?.toString()
+            : "",
       }));
 
       // Clear product-related errors
@@ -325,7 +331,7 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
 
       {selectedProduct && (
         <>
-          <FormGroup label="UOM">
+          <FormGroup label="UOM*">
             <Dropdown
               style={[
                 styles.dropdown,
@@ -358,7 +364,7 @@ const CreateForm = ({ onClose, onTransferCreated }) => {
             />
           </FormGroup>
 
-          <FormGroup label="Batch No">
+          <FormGroup label="Batch No*">
             <Dropdown
               style={[
                 styles.dropdown,
