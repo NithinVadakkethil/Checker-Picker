@@ -49,7 +49,7 @@ const ProductDetails = ({
     );
   };
 
-  console.log("orderNo--->", orderNo)
+  console.log("orderNo--->", activeName)
 
   return (
     <View className="flex-1">
@@ -149,14 +149,14 @@ const ProductDetails = ({
             productName={productName}
             badge={reAssigned ? <ReAsgnBadge /> : null}
           />
-          {activeName !== "Receipts" && status === "Done" ? (
+          {activeName !== "Receipts" && activeName !== "Zone Transfer" && status === "Done" ? (
             <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
               <Text className="text-[#03BA03] text-center text-base font-medium">
                 Done
               </Text>
             </View>
           ) : (
-            activeName !== "Receipts" && (
+            activeName !== "Receipts" && activeName !== "Zone Transfer" && (
               <TouchableOpacity onPress={() => onStatusChange(moveId)}>
                 <View className="bg-[#DAE1E3] px-5 py-1 rounded-[4px] shadow-sm shadow-black/10">
                   {loading ? (
@@ -222,11 +222,11 @@ const ProductDetails = ({
           <View className="flex-row items-center">
             <LabelInfo label={"Expiry Date"} />
             {status === "Done" ? (
-              <Text>Updated</Text>
+              <Text>{dayjs(selectedDate)?.format("DD/MM/YYYY")}</Text>
             ) : (
               <TouchableOpacity
                 className="flex-row items-center justify-between w-[160px] border border-gray-300 rounded-md px-3 py-1 bg-white"
-              onPress={type !== "Checker" && onPress} // or your desired handler
+                onPress={type !== "Checker" ? onPress : console.log("its Checker")} // or your desired handler
               >
                 <Text className="text-base font-semibold text-black">
                   {batchNumber

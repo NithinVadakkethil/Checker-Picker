@@ -86,24 +86,6 @@ const Receipts = ({ onPress }) => {
         const response = await apiGet("/picker/receipts_all_tasks");
         if (response?.payload) {
           const transformedPayload = transformPayload(response.payload);
-          //   const groupedData = groupByOrderNo(transformedPayload);
-          //   const pendingCount = groupedData.filter(
-          //     (item) =>
-          //       item.state === "picker_pending" || item.state === "reassigned"
-          //   ).length;
-          //   updateListCount("saleInvoice", pendingCount);
-          //   // Sort: pending ("picker_pending") first, then others
-          //   const sortedData = groupedData.sort((a, b) => {
-          //     const priority = {
-          //       picker_pending: 0,
-          //       reassigned: 1,
-          //       picker_done: 2,
-          //       checker_verified: 3,
-          //     };
-
-          //     return priority[a.state] - priority[b.state];
-          //   });
-
           const groupedData = groupByOrderNo(transformedPayload);
 
           // Filter only pending or reassigned receipts

@@ -181,13 +181,6 @@ const DetailScreen = ({ activeName, productLines }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
       />
-
-      {/* <TouchableOpacity
-        onPress={createSheetOpen}
-        className="absolute bottom-5 left-1/2 -translate-x-1/2"
-      >
-        <Add />
-      </TouchableOpacity> */}
       <EditBottomSheet
         onClose={editSheetClose}
         onOpen={editSheetOpen}
