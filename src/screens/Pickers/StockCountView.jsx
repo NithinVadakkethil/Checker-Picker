@@ -120,24 +120,30 @@ const StockCountView = () => {
         // });
 
         const transformedData = response.payload.map((item) => {
-          const savedQty = storedStockData[item.id] !== undefined // Use item.id instead of product_id
-            ? storedStockData[item.id]
-            : 0;
+          const savedQty =
+            storedStockData[item.id] !== undefined ? storedStockData[item.id] : 0;
+
+          // Ensure actual_field and balance are non-negative
+          const actualField = item.show_actual_qty
+            ? Math.abs(item.available_qty)
+            : null;
+          const balance =
+            item.show_actual_qty && actualField !== null
+              ? Math.abs(savedQty - actualField)
+              : null;
         
           return {
             id: item.id,
             product_id: item.product_id,
             product_name: item.product_name,
             current_stock: savedQty,
-            actual_field: item.show_actual_qty ? item.available_qty : null,
-            balance: item.show_actual_qty && item.available_qty != null
-              ? savedQty - item.available_qty
-              : null,
+            actual_field: actualField,
+            balance: balance,
             show_actual_qty: item.show_actual_qty,
             on_hand_qty: item.on_hand_qty,
             available_qty: item.available_qty,
-            lot_id: item.lot_id,  // Include lot information
-            lot_name: item.lot_name
+            lot_id: item.lot_id,
+            lot_name: item.lot_name,
           };
         });
 
@@ -214,7 +220,7 @@ const StockCountView = () => {
               current_stock: newQuantity,
               balance:
                 item.show_actual_qty && item.actual_field != null
-                  ? newQuantity - item.actual_field
+                  ? Math.abs(newQuantity - item.actual_field)
                   : null,
             }
           : item
