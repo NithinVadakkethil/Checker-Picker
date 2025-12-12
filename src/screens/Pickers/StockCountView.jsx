@@ -188,38 +188,42 @@ const StockCountView = () => {
   //   }
   // };
 
-  const updateQuantity = async (productId, newQuantity) => {
+  const handleUpdate = async (productId, newQuantity) => {
+    // Update local state with recalculated balance
+    setTableData((prevData) =>
+      prevData.map((item) =>
+        item.id === productId
+          ? {
+              ...item,
+              current_stock: newQuantity,
+              balance:
+                item.show_actual_qty && item.actual_field != null
+                  ? newQuantity - item.actual_field
+                  : null,
+            }
+          : item
+      )
+    );
+
     try {
       const result = await updateCurrentStock(productId, newQuantity);
 
       if (result.success) {
-        toast.show("Stock updated", { type: "Success" });
-
-        // Save to AsyncStorage
+        toast.show("Stock updated", { type: "success" });
         await saveStockData(productId, newQuantity);
-
-        // Update local state with recalculated balance
-        setTableData((prevData) =>
-          prevData.map((item) =>
-            item.product_id === productId
-              ? {
-                  ...item,
-                  current_stock: newQuantity,
-                  balance:
-                    item.show_actual_qty && item.actual_field != null
-                      ? newQuantity - item.actual_field
-                      : null,
-                }
-              : item
-          )
-        );
       } else {
-        toast.show(result.message, { type: "error" });
+        toast.show(result.message, { type: "danger" });
+        fetchStockData();
       }
     } catch (err) {
-      toast.show("Failed to update quantity", { type: "error" });
+      toast.show("Failed to update quantity", { type: "danger" });
+      fetchStockData();
       console.error("Error updating quantity:", err);
     }
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    handleUpdate(productId, newQuantity);
   };
 
   useEffect(() => {
