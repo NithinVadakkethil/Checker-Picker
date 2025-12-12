@@ -189,6 +189,22 @@ const StockCountView = () => {
   // };
 
   const handleUpdate = async (productId, newQuantity) => {
+    // Find the item being updated
+    const itemToUpdate = tableData.find((item) => item.id === productId);
+
+    // If item not found, do nothing
+    if (!itemToUpdate) {
+      return;
+    }
+
+    // Validate if current stock exceeds on-hand quantity
+    if (newQuantity > itemToUpdate.on_hand_qty) {
+      toast.show("Current stock cannot exceed on-hand quantity.", {
+        type: "danger",
+      });
+      return; // Stop execution
+    }
+
     // Update local state with recalculated balance
     setTableData((prevData) =>
       prevData.map((item) =>
