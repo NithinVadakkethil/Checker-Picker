@@ -120,24 +120,30 @@ const StockCountView = () => {
         // });
 
         const transformedData = response.payload.map((item) => {
-          const savedQty = storedStockData[item.id] !== undefined // Use item.id instead of product_id
-            ? storedStockData[item.id]
-            : 0;
+          const savedQty =
+            storedStockData[item.id] !== undefined ? storedStockData[item.id] : 0;
+
+          // Ensure actual_field and balance are non-negative
+          const actualField = item.show_actual_qty
+            ? Math.abs(item.available_qty)
+            : null;
+          const balance =
+            item.show_actual_qty && actualField !== null
+              ? Math.abs(savedQty - actualField)
+              : null;
         
           return {
             id: item.id,
             product_id: item.product_id,
             product_name: item.product_name,
             current_stock: savedQty,
-            actual_field: item.show_actual_qty ? item.available_qty : null,
-            balance: item.show_actual_qty && item.available_qty != null
-              ? savedQty - item.available_qty
-              : null,
+            actual_field: actualField,
+            balance: balance,
             show_actual_qty: item.show_actual_qty,
             on_hand_qty: item.on_hand_qty,
             available_qty: item.available_qty,
-            lot_id: item.lot_id,  // Include lot information
-            lot_name: item.lot_name
+            lot_id: item.lot_id,
+            lot_name: item.lot_name,
           };
         });
 
@@ -188,38 +194,58 @@ const StockCountView = () => {
   //   }
   // };
 
-  const updateQuantity = async (productId, newQuantity) => {
+  const handleUpdate = async (productId, newQuantity) => {
+    // Find the item being updated
+    const itemToUpdate = tableData.find((item) => item.id === productId);
+
+    // If item not found, do nothing
+    if (!itemToUpdate) {
+      return;
+    }
+
+    // Validate if current stock exceeds on-hand quantity
+    if (newQuantity > itemToUpdate.on_hand_qty) {
+      toast.show("Current stock cannot exceed on-hand quantity.", {
+        type: "danger",
+      });
+      return; // Stop execution
+    }
+
+    // Update local state with recalculated balance
+    setTableData((prevData) =>
+      prevData.map((item) =>
+        item.id === productId
+          ? {
+              ...item,
+              current_stock: newQuantity,
+              balance:
+                item.show_actual_qty && item.actual_field != null
+                  ? Math.abs(newQuantity - item.actual_field)
+                  : null,
+            }
+          : item
+      )
+    );
+
     try {
       const result = await updateCurrentStock(productId, newQuantity);
 
       if (result.success) {
-        toast.show("Stock updated", { type: "Success" });
-
-        // Save to AsyncStorage
+        toast.show("Stock updated", { type: "success" });
         await saveStockData(productId, newQuantity);
-
-        // Update local state with recalculated balance
-        setTableData((prevData) =>
-          prevData.map((item) =>
-            item.product_id === productId
-              ? {
-                  ...item,
-                  current_stock: newQuantity,
-                  balance:
-                    item.show_actual_qty && item.actual_field != null
-                      ? newQuantity - item.actual_field
-                      : null,
-                }
-              : item
-          )
-        );
       } else {
-        toast.show(result.message, { type: "error" });
+        toast.show(result.message, { type: "danger" });
+        fetchStockData();
       }
     } catch (err) {
-      toast.show("Failed to update quantity", { type: "error" });
+      toast.show("Failed to update quantity", { type: "danger" });
+      fetchStockData();
       console.error("Error updating quantity:", err);
     }
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    handleUpdate(productId, newQuantity);
   };
 
   useEffect(() => {
