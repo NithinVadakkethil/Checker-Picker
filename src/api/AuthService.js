@@ -9,19 +9,35 @@ export const loginUser = async (username, password) => {
       password,
     });
 
-    if (response?.data?.statusOk) {
-      const { access_token, refresh_token } = response?.data?.payload?.token;
-      const userType = convertToLowerCase(response?.data?.payload?.user_type)
+    const data = response?.data;
 
-      // Store tokens in AsyncStorage
-      await AsyncStorage.setItem("token", access_token);
-      await AsyncStorage.setItem("refresh_token", refresh_token);
-      await AsyncStorage.setItem("user_type", userType);
-
-      return { success: true, userType: userType }; // Return user data
+    if (!data?.statusOk) {
+      return { success: false, message: data?.message || "Login failed" };
     }
+
+    const accessToken = data?.payload?.token;
+    const refreshToken = data?.payload?.refresh_token;
+    const userType = convertToLowerCase(data?.payload?.user_type);
+
+    if (!accessToken || !refreshToken) {
+      console.error("Token missing in response", data);
+      return { success: false, message: "Invalid login response" };
+    }
+
+    await AsyncStorage.setItem("token", accessToken);
+    await AsyncStorage.setItem("refresh_token", refreshToken);
+    await AsyncStorage.setItem("user_type", userType);
+
+    return { success: true, userType };
   } catch (error) {
-    console.error("Login Error:", error.response?.data || error.message);
-    return { success: false, message: error.response?.data?.message || "Login failed" };
+    console.error(
+      "Login Error 👉",
+      error?.response?.data || error.message
+    );
+
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Login failed",
+    };
   }
 };

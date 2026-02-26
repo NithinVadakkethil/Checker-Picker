@@ -39,7 +39,8 @@ const ProductDetails = ({
   deliveryDate,
   verifyReciept,
   purchaseId,
-  recieptBatch
+  recieptBatch,
+  reassignReason
 }) => {
   const ReAsgnBadge = () => {
     return (
@@ -48,8 +49,6 @@ const ProductDetails = ({
       </View>
     );
   };
-
-  console.log("orderNo--->", activeName)
 
   return (
     <View className="flex-1">
@@ -115,6 +114,7 @@ const ProductDetails = ({
       {type === "Checker" ? (
         <View className="flex-row justify-between items-center pt-2.5">
           <ProductName productName={productName} status={status} />
+          {activeName === "Receipts" && <LabelInfo label={"UOM"} value={uom} />}
           {status === "Done" && activeName !== "Receipts" ? (
             <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
               <Text className="text-[#03BA03] text-center text-base font-medium">
@@ -149,6 +149,7 @@ const ProductDetails = ({
             productName={productName}
             badge={reAssigned ? <ReAsgnBadge /> : null}
           />
+          {activeName === "Receipts" && <LabelInfo label={"UOM"} value={uom} />}
           {activeName !== "Receipts" && activeName !== "Zone Transfer" && status === "Done" ? (
             <View className="bg-[#FFF] border border-[#03BA03] px-5 py-1 rounded-[4px]">
               <Text className="text-[#03BA03] text-center text-base font-medium">
@@ -222,11 +223,11 @@ const ProductDetails = ({
           <View className="flex-row items-center">
             <LabelInfo label={"Expiry Date"} />
             {status === "Done" ? (
-              <Text>{dayjs(selectedDate)?.format("DD/MM/YYYY")}</Text>
+              <Text>{dayjs(selectedDate ? selectedDate : batchNumber)?.format("DD/MM/YYYY")}</Text>
             ) : (
               <TouchableOpacity
                 className="flex-row items-center justify-between w-[160px] border border-gray-300 rounded-md px-3 py-1 bg-white"
-                onPress={type !== "Checker" ? onPress : console.log("its Checker")} // or your desired handler
+                onPress={type !== "Checker" && status !== "Done" ? onPress : console.log("its Checker")} // or your desired handler
               >
                 <Text className="text-base font-semibold text-black">
                   {batchNumber
@@ -264,6 +265,10 @@ const ProductDetails = ({
           <LabelInfo label={"Batch No"} value={expiryDate} />
         )}
       </View>
+      {reAssigned && 
+      <View className="flex-row ">
+        <ZoneLabel prefix={"Reason"} zone={reassignReason} color={toColor} reAssigned={reAssigned}/>
+      </View>}
 
       <View className={`flex-row justify-between items-end`}>
         <ZoneLabel prefix={"From"} zone={fromZone} color={fromColor} />

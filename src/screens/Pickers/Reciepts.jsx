@@ -26,7 +26,7 @@ const Receipts = ({ onPress }) => {
         move_id: product.move_id,
         product_id: product.product_id,
         product_name: product.product_name.trim(),
-        expiry_date: product.expiry_date || "",
+        expiry_date: product?.lots[0]?.expiry_date || "",
         qty: product.qty,
         uom_name: product.uom_name,
         uom_id: product.uom_id,
@@ -120,6 +120,8 @@ const Receipts = ({ onPress }) => {
 
     fetchReciepts();
   }, []);
+
+  console.log("reciepts--->", reciepts)
 
   return (
     <View className="flex-1 relative">

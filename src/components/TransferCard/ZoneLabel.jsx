@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Dimensions } from "react-native";
 
-const ZoneLabel = ({ prefix, zone, color, dateTime, textAlign }) => {
+const ZoneLabel = ({ prefix, zone, color, dateTime, textAlign, reAssigned }) => {
   const screenWidth = Dimensions.get("window").width;
 
   // Dynamically adjust maxLength based on screen width
@@ -21,7 +21,7 @@ const ZoneLabel = ({ prefix, zone, color, dateTime, textAlign }) => {
         style={{ color, textAlign: textAlign ? textAlign : "left" }}
         className={`font-bold ${dateTime ? "text-base" : "text-sm"}`}
       >
-        {breakLongWords(zone || dateTime, maxLength)}
+        {breakLongWords(zone || dateTime, reAssigned ? "" : maxLength)}
       </Text>
     </View>
   );

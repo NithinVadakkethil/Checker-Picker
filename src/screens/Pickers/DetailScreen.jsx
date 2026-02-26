@@ -172,6 +172,7 @@ const DetailScreen = ({ activeName, productLines }) => {
                     activeName={activeName}
                     selectedDate={selectedDates[product.move_id] || null}
                     loading={loadingMap[product.move_id] || false}
+                    reassignReason={product?.reassign_reason}
                   />
                 );
               }}

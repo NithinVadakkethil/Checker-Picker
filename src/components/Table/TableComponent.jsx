@@ -16,7 +16,6 @@ const TableComponent = ({
   const flatListRef = useRef(null);
 
   const handleQuantitySubmit = (productId, value, index) => {
-    console.log("productId--->", productId)
     const numericValue = parseFloat(value) || 0;
     onUpdateQuantity(productId, numericValue);
     Keyboard.dismiss();
@@ -46,7 +45,7 @@ const TableComponent = ({
         // numberOfLines={1}
         // ellipsizeMode="tail"
       >
-        {item.product_name}
+        {item.product_name}, {item.lot_name}
       </Text>
 
       {/* Current Stock - Editable */}

@@ -188,43 +188,65 @@ const StockCountView = () => {
   //   }
   // };
 
-  const updateQuantity = async (productId, newQuantity) => {
+  const handleUpdate = async (productId, newQuantity) => {
+    // Find the item being updated
+    const itemToUpdate = tableData.find((item) => item.id === productId);
+
+    // If item not found, do nothing
+    if (!itemToUpdate) {
+      return;
+    }
+
+    // Validate if current stock exceeds on-hand quantity
+    if (newQuantity > itemToUpdate.on_hand_qty) {
+      toast.show("Current stock cannot exceed on-hand quantity.", {
+        type: "danger",
+      });
+      return; // Stop execution
+    }
+
+    // Update local state with recalculated balance
+    setTableData((prevData) =>
+      prevData.map((item) =>
+        item.id === productId
+          ? {
+              ...item,
+              current_stock: newQuantity,
+              balance:
+                item.show_actual_qty && item.actual_field != null
+                  ? newQuantity - item.actual_field
+                  : null,
+            }
+          : item
+      )
+    );
+
     try {
       const result = await updateCurrentStock(productId, newQuantity);
 
       if (result.success) {
         toast.show("Stock updated", { type: "Success" });
-
-        // Save to AsyncStorage
         await saveStockData(productId, newQuantity);
-
-        // Update local state with recalculated balance
-        setTableData((prevData) =>
-          prevData.map((item) =>
-            item.product_id === productId
-              ? {
-                  ...item,
-                  current_stock: newQuantity,
-                  balance:
-                    item.show_actual_qty && item.actual_field != null
-                      ? newQuantity - item.actual_field
-                      : null,
-                }
-              : item
-          )
-        );
       } else {
-        toast.show(result.message, { type: "error" });
+        toast.show(result.message, { type: "danger" });
+        fetchStockData();
       }
     } catch (err) {
-      toast.show("Failed to update quantity", { type: "error" });
+      toast.show("Failed to update quantity", { type: "danger" });
+      fetchStockData();
       console.error("Error updating quantity:", err);
     }
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    handleUpdate(productId, newQuantity);
   };
 
   useEffect(() => {
     fetchStockData();
   }, []);
+
+  console.log("tableData--->", tableData)
 
   return (
     <View className="flex-1">

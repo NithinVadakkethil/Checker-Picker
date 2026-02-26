@@ -34,6 +34,11 @@ const HistoryItem = ({ initials, time, orderNo, type }) => (
             Zone transfer <Text className="font-bold">{orderNo}</Text> is
             Completed
           </>
+        ) : type === "Receipt" ? (
+          <>
+            Receipt <Text className="font-bold">{orderNo}</Text> is
+            Completed
+          </>
         ) : (
           <>
             Scheduled Delivery <Text className="font-bold">{orderNo}</Text> is
@@ -66,25 +71,6 @@ const History = () => {
     return {
       payload: result,
     };
-  };
-
-  const generateInitials = (productName) => {
-    const nameWithoutID = productName
-      .replace(/\[\d+\]\s*/, "") // Remove [ID]
-      .replace(/["\t]/g, "") // Remove quotes, tabs
-      .replace(/-/g, " ") // Replace hyphens with space
-      .trim();
-
-    // Filter out words that contain any digits (e.g., "24X500G")
-    const validWords = nameWithoutID
-      .split(/\s+/)
-      .filter((word) => /^[A-Za-z]+$/.test(word)); // Keep only pure alphabetic words
-
-    const initials = validWords
-      .map((word) => word.charAt(0).toUpperCase())
-      .join("");
-
-    return initials.slice(0, 3); // Return up to 3 characters
   };
 
   useEffect(() => {
